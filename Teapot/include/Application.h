@@ -2,6 +2,8 @@
 
 #include <thread>
 
+#include "WindowManager.h"
+
 class Application
 {
 public:
@@ -10,10 +12,12 @@ public:
 
 	int run();
 
-	void renderingLoop();
+	//void renderingLoop();
 
 private:
 	bool isRunning = false;
 
-	std::thread renderingThread;
+	WindowManager winManager;
+
+	//std::thread renderingThread;
 };
