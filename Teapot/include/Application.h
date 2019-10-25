@@ -1,23 +1,26 @@
 #pragma once
 
-#include <thread>
+#include <glfw/glfw3.h>
 
-#include "WindowManager.h"
+#include "ImguiWrapper.h"
+#include "ctm/VkCore.h"
 
-class Application
+namespace teapot
 {
-public:
-	Application();
-	~Application();
+	class Application
+	{
+	public:
+		Application();
+		~Application();
 
-	int run();
+		int run();
 
-	//void renderingLoop();
+	private:
+		bool isRunning = false;
 
-private:
-	bool isRunning = false;
+		GLFWwindow *win;
 
-	WindowManager winManager;
-
-	//std::thread renderingThread;
-};
+		ImguiWrapper imgui;
+		ctm::VkCore vCore;
+	};
+}
