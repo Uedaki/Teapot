@@ -10,6 +10,10 @@ namespace teapot
 {
 	struct SceneView : public ctm::VkRasterizer
 	{
+		float location[3] = { 0, 0, 0 };
+		float rotation[3] = { 0, 0, 0 };
+		float scale[3] = { 1, 1, 1 };
+
 		VkSampler imageSampler;
 		VkDescriptorSetLayout descriptorSetLayout;
 		std::vector<VkFence> fences;

@@ -2,16 +2,13 @@
 
 #include <stdexcept>
 
-#include "ImguiWrapper.h"
-#include "SceneView.h"
-
 teapot::Application::Application()
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-	win = glfwCreateWindow(700, 500, "Vulkan", nullptr, nullptr);
+	win = glfwCreateWindow(1280, 720, "Vulkan", nullptr, nullptr);
 
 	ctm::VkCore::init(vCore, win);
 	ImguiWrapper::init(imgui, win, vCore);
@@ -21,6 +18,7 @@ teapot::Application::Application()
 
 teapot::Application::~Application()
 {
+	teapot::SceneView::destroy(scene, vCore);
 	teapot::ImguiWrapper::destroy(imgui, vCore);
 	ctm::VkCore::destroy(vCore);
 	glfwDestroyWindow(win);
@@ -29,7 +27,6 @@ teapot::Application::~Application()
 
 int teapot::Application::run()
 {
-	teapot::SceneView rast;
 	uint32_t i = 0;
 
 	if (!isRunning)
@@ -40,22 +37,41 @@ int teapot::Application::run()
 		ImguiWrapper::newFrame(imgui);
 		
 		ImVec2 size = ImGui::GetIO().DisplaySize;
-		if (rast.extent.width != size.x || rast.extent.height != size.y)
+		size.x -= 400;
+		if (scene.extent.width != size.x || scene.extent.height != size.y)
 		{
-			teapot::SceneView::init(rast, vCore, imgui.descriptorPool, { (uint32_t)size.x, (uint32_t)size.y }, 2);
+			teapot::SceneView::init(scene, vCore, imgui.descriptorPool, { (uint32_t)size.x, (uint32_t)size.y }, 2);
 		}
 
 		ImGui::SetNextWindowPos(ImVec2(0, 0));
 		ImGui::SetNextWindowSize(size);
-		ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoResize);
-		ImGui::Image((void *)&rast.descriptorSets[i], ImGui::GetContentRegionAvail());
+		ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+		ImGui::Image((void *)&scene.descriptorSets[i], ImGui::GetContentRegionAvail());
 		ImGui::End();
 
-		teapot::SceneView::render(rast, vCore, i);
-		ImguiWrapper::render(imgui, rast.signalSemaphores[i], vCore);
+		ImGui::SetNextWindowPos(ImVec2(size.x, 0));
+		ImGui::SetNextWindowSize(ImVec2(400, size.y));
+		ImGui::Begin("Details panel", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+		static bool isDisplayed = true;
+		if (ImGui::CollapsingHeader("Transform", nullptr, ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Location: ");
+			ImGui::SameLine(100);
+			ImGui::InputFloat3("##1", scene.location, "%.0f");
+			ImGui::Text("Rotation: ");
+			ImGui::SameLine(100);
+			ImGui::InputFloat3("##2", scene.rotation, "%.0f");
+			ImGui::Text("Scale: ");
+			ImGui::SameLine(100);
+			ImGui::InputFloat3("##3", scene.scale, "%.0f");
+		}
+		ImGui::End();
+
+		teapot::SceneView::render(scene, vCore, i);
+		ImguiWrapper::render(imgui, scene.signalSemaphores[i], vCore);
 		i = (i + 1) % 2;
 	}
 	vkQueueWaitIdle(vCore.queue.present);
-	teapot::SceneView::destroy(rast, vCore);
 	return (0);
 }

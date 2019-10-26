@@ -2,8 +2,9 @@
 
 #include <glfw/glfw3.h>
 
-#include "ImguiWrapper.h"
 #include "ctm/VkCore.h"
+#include "ImguiWrapper.h"
+#include "SceneView.h"
 
 namespace teapot
 {
@@ -20,6 +21,7 @@ namespace teapot
 
 		GLFWwindow *win;
 
+		SceneView scene;
 		ImguiWrapper imgui;
 		ctm::VkCore vCore;
 	};
