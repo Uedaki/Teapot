@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "ctm/VkUtils.h"
+#include "ctm/VkVertex.h"
 
 namespace
 {
@@ -94,10 +95,13 @@ namespace
 
 		VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+		auto attrDesc = ctm::VkVertex::getAttributeDescriptions();
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 0;
-		vertexInputInfo.vertexAttributeDescriptionCount = 0;
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.pVertexBindingDescriptions = &ctm::VkVertex::getBindingDescription();
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attrDesc.size());
+		vertexInputInfo.pVertexAttributeDescriptions = attrDesc.data();
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
 		inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -298,7 +302,7 @@ void ctm::VkRasterizer::init(ctm::VkRasterizer &rast, ctm::VkCore &core, VkExten
 
 void ctm::VkRasterizer::destroy(ctm::VkRasterizer &rast, ctm::VkCore &core)
 {
-	vkFreeCommandBuffers(core.device, rast.commandPool, rast.commandBuffers.size(), rast.commandBuffers.data());
+	vkFreeCommandBuffers(core.device, rast.commandPool, static_cast<uint32_t>(rast.commandBuffers.size()), rast.commandBuffers.data());
 
 	vkDestroyCommandPool(core.device, rast.commandPool, core.allocator);
 	vkDestroyPipeline(core.device, rast.pipeline, core.allocator);

@@ -19,15 +19,19 @@ include_directories("${Teapot_GEN_FILE_DIR}")
 set(Teapot_SRC ${Teapot_SOURCE_DIR}/main.cpp
 				${Teapot_SOURCE_DIR}/Application.cpp
 				${Teapot_SOURCE_DIR}/ImguiWrapper.cpp
-				${Teapot_SOURCE_DIR}/SceneView.cpp)
+				${Teapot_SOURCE_DIR}/SceneView.cpp
+				${Teapot_SOURCE_DIR}/Mesh.cpp)
 set(Teapot_CTM_SRC ${Teapot_SOURCE_DIR}/ctm/VkCore.cpp
 					${Teapot_SOURCE_DIR}/ctm/VkRasterizer.cpp
+					${Teapot_SOURCE_DIR}/ctm/VkVertex.cpp
 					${Teapot_SOURCE_DIR}/ctm/VkUtils.cpp)
 set(Teapot_INCLUDE ${Teapot_INCLUDE_DIR}/Application.h
 					${Teapot_INCLUDE_DIR}/ImguiWrapper.h
-					${Teapot_INCLUDE_DIR}/SceneView.h)
+					${Teapot_INCLUDE_DIR}/SceneView.h
+					${Teapot_INCLUDE_DIR}/Mesh.h)
 set(Teapot_CTM_INCLUDE ${Teapot_INCLUDE_DIR}/ctm/VkCore.h
 						${Teapot_INCLUDE_DIR}/ctm/VkRasterizer.h
+						${Teapot_INCLUDE_DIR}/ctm/VkVertex.h
 						${Teapot_INCLUDE_DIR}/ctm/VkUtils.h)
 set(PROJECT_GENERATED_INCLUDE ${Teapot_GEN_FILE_DIR}/Teapot.h)
 
@@ -35,6 +39,9 @@ set(PROJECT_GENERATED_INCLUDE ${Teapot_GEN_FILE_DIR}/Teapot.h)
 
 find_package(OpenGL REQUIRED)
 find_package(Vulkan REQUIRED)
+
+set(GLM_INCLUDE_DIR "" CACHE PATH "Path to the glm include files")
+include_directories(${GLM_INCLUDE_DIR})
 
 set(IMGUI_DIR "modules/imgui")
 set(IMGUI_SRC ${IMGUI_DIR}/imgui.cpp

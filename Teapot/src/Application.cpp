@@ -2,11 +2,23 @@
 
 #include <stdexcept>
 
+#include "Mesh.h"
+
+namespace
+{
+	bool swapChainRebuild = false;
+
+	void glfwResizeCallback(GLFWwindow *win, int w, int h)
+	{
+		swapChainRebuild = true;
+	}
+}
+
 teapot::Application::Application()
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	win = glfwCreateWindow(1280, 720, "Vulkan", nullptr, nullptr);
 
@@ -29,18 +41,27 @@ int teapot::Application::run()
 {
 	uint32_t i = 0;
 
+	teapot::Mesh mesh(vCore);
+
 	if (!isRunning)
 		throw std::runtime_error("Application is not initialized");
 	while (!glfwWindowShouldClose(win))
 	{
 		glfwPollEvents();
+
+		if (swapChainRebuild)
+		{
+			swapChainRebuild = false;
+			teapot::ImguiWrapper::rebuildSwapChain(imgui, win, vCore);
+		}
+
 		ImguiWrapper::newFrame(imgui);
-		
+
 		ImVec2 size = ImGui::GetIO().DisplaySize;
 		size.x -= 400;
 		if (scene.extent.width != size.x || scene.extent.height != size.y)
 		{
-			teapot::SceneView::init(scene, vCore, imgui.descriptorPool, { (uint32_t)size.x, (uint32_t)size.y }, 2);
+			teapot::SceneView::init(scene, vCore, imgui.descriptorPool, mesh, { (uint32_t)size.x, (uint32_t)size.y }, 2);
 		}
 
 		ImGui::SetNextWindowPos(ImVec2(0, 0));

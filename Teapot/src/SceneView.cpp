@@ -38,7 +38,7 @@ namespace
 			throw std::runtime_error("Failed to create descriptor set layout");
 	}
 
-	void recordCommandBuffer(ctm::VkRasterizer &rast, VkCommandBuffer &commandBuffer, VkImage &image, VkFramebuffer &frame)
+	void recordCommandBuffer(ctm::VkRasterizer &rast, VkCommandBuffer &commandBuffer, VkImage &image, VkFramebuffer &frame, teapot::Mesh &mesh)
 	{
 		VkCommandBufferBeginInfo beginInfo = {};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -57,9 +57,12 @@ namespace
 		renderPassInfo.clearValueCount = 1;
 		renderPassInfo.pClearValues = &clearColor;
 
+		VkDeviceSize p = 0;
 		vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rast.pipeline);
-		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mesh.vBuffer, &p);
+		vkCmdBindIndexBuffer(commandBuffer, mesh.iBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, mesh.indices.size(), 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(commandBuffer);
 
@@ -108,7 +111,7 @@ namespace
 	}
 }
 
-void teapot::SceneView::init(teapot::SceneView &scene, ctm::VkCore &core, VkDescriptorPool &descriptorPool, VkExtent2D extent, uint32_t imageCount)
+void teapot::SceneView::init(teapot::SceneView &scene, ctm::VkCore &core, VkDescriptorPool &descriptorPool, teapot::Mesh &mesh, VkExtent2D extent, uint32_t imageCount)
 {
 	ctm::VkRasterizer::init(scene, core, extent, imageCount);
 
@@ -119,7 +122,7 @@ void teapot::SceneView::init(teapot::SceneView &scene, ctm::VkCore &core, VkDesc
 	scene.descriptorSets.resize(imageCount);
 	for (uint32_t i = 0; i < imageCount; i++)
 	{
-		recordCommandBuffer(scene, scene.commandBuffers[i], scene.images[i], scene.frameBuffers[i]);
+		recordCommandBuffer(scene, scene.commandBuffers[i], scene.images[i], scene.frameBuffers[i], mesh);
 		createDescriptorSet(scene, core, descriptorPool, i);
 
 		VkFenceCreateInfo fenceInfo = {};
