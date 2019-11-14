@@ -134,7 +134,7 @@ namespace
 		rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-		rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+		rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 		rasterizer.depthBiasEnable = VK_FALSE;
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
@@ -159,7 +159,8 @@ namespace
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 0;
+		pipelineLayoutInfo.setLayoutCount = 1;
+		pipelineLayoutInfo.pSetLayouts = &rast.descriptorSetLayout;
 		pipelineLayoutInfo.pushConstantRangeCount = 0;
 		if (vkCreatePipelineLayout(core.device, &pipelineLayoutInfo, core.allocator, &rast.pipelineLayout) != VK_SUCCESS)
 			throw std::runtime_error("failed to create pipeline layout!");
@@ -275,6 +276,21 @@ namespace
 		if (vkAllocateCommandBuffers(core.device, &allocInfo, rast.commandBuffers.data()) != VK_SUCCESS)
 			throw std::runtime_error("Failed to allocate VkCommandBuffers");
 	}
+
+	void createDescriptorSetLayout(ctm::VkRasterizer &scene, ctm::VkCore &core)
+	{
+		VkDescriptorSetLayoutBinding binding = {};
+		binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		binding.descriptorCount = 1;
+		binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		binding.pImmutableSamplers = nullptr;
+		VkDescriptorSetLayoutCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		info.bindingCount = 1;
+		info.pBindings = &binding;
+		if (vkCreateDescriptorSetLayout(core.device, &info, core.allocator, &scene.descriptorSetLayout) != VK_SUCCESS)
+			throw std::runtime_error("Failed to create descriptor set layout");
+	}
 }
 
 void ctm::VkRasterizer::init(ctm::VkRasterizer &rast, ctm::VkCore &core, VkExtent2D extent, uint32_t imageCount)
@@ -288,6 +304,7 @@ void ctm::VkRasterizer::init(ctm::VkRasterizer &rast, ctm::VkCore &core, VkExten
 	rast.frameBuffers.resize(imageCount);
 	rast.commandBuffers.resize(imageCount);
 
+	createDescriptorSetLayout(rast, core);
 	createRenderPass(rast, core);
 	createPipeline(rast, core);
 	createCommandPool(rast, core);
@@ -303,6 +320,8 @@ void ctm::VkRasterizer::init(ctm::VkRasterizer &rast, ctm::VkCore &core, VkExten
 void ctm::VkRasterizer::destroy(ctm::VkRasterizer &rast, ctm::VkCore &core)
 {
 	vkFreeCommandBuffers(core.device, rast.commandPool, static_cast<uint32_t>(rast.commandBuffers.size()), rast.commandBuffers.data());
+
+	vkDestroyDescriptorSetLayout(core.device, rast.descriptorSetLayout, core.allocator);
 
 	vkDestroyCommandPool(core.device, rast.commandPool, core.allocator);
 	vkDestroyPipeline(core.device, rast.pipeline, core.allocator);

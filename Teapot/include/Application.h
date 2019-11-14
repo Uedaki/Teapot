@@ -15,6 +15,9 @@ namespace teapot
 		~Application();
 
 		int run();
+		void display();
+
+		void resize(int width = 0, int height = 0);
 
 	private:
 		bool isRunning = false;
@@ -24,5 +27,11 @@ namespace teapot
 		SceneView scene;
 		ImguiWrapper imgui;
 		ctm::VkCore vCore;
+
+		teapot::Mesh mesh;
+
+		float location[3] = {0, 0, 0};
+		float rotation[3] = {0, 0, 0};
+		float scale[3] = {1, 1, 1};
 	};
 }

@@ -22,6 +22,8 @@ namespace ctm
 		std::vector<VkFramebuffer> frameBuffers;
 		std::vector<VkCommandBuffer> commandBuffers;
 
+		VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+
 		static void init(VkRasterizer &rast, VkCore &core, VkExtent2D extent, uint32_t imageCount);
 		static void destroy(VkRasterizer &rast, VkCore &core);
 	};

@@ -110,13 +110,11 @@ void teapot::ImguiWrapper::newFrame(teapot::ImguiWrapper &wrapper)
 	ImGui::NewFrame();
 }
 
-void teapot::ImguiWrapper::rebuildSwapChain(teapot::ImguiWrapper &wrapper, GLFWwindow *win, ctm::VkCore &vCore)
+void teapot::ImguiWrapper::rebuildSwapChain(teapot::ImguiWrapper &wrapper, ctm::VkCore &vCore, int w, int h)
 {
-	int w;
-	int h;
-	glfwGetWindowSize(win, &w, &h);
 	ImGui_ImplVulkan_SetMinImageCount(2);
 	ImGui_ImplVulkanH_CreateWindow(vCore.instance, vCore.physicalDevice, vCore.device, &wrapper.wd, vCore.queue.presentIdx, vCore.allocator, w, h, wrapper.wd.ImageCount);
+	wrapper.wd.FrameIndex = 0;
 }
 
 void teapot::ImguiWrapper::render(teapot::ImguiWrapper &wrapper, VkSemaphore sem, ctm::VkCore &vCore)
