@@ -19,7 +19,7 @@ teapot::Application::Application()
 {
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	win = glfwCreateWindow(1280, 720, "Vulkan", nullptr, nullptr);
 	glfwSetFramebufferSizeCallback(win, glfwResizeCallback);
