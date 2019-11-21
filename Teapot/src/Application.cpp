@@ -28,7 +28,7 @@ teapot::Application::Application()
 
 	ctm::VkCore::init(vCore, win);
 	ImguiWrapper::init(imgui, win, vCore);
-	mesh.init();
+	mesh.init(2);
 
 	resize();
 	isRunning = true;
@@ -60,22 +60,10 @@ int teapot::Application::run()
 
 void teapot::Application::display()
 {
-	//if (swapChainRebuild)
-	//{
-	//	swapChainRebuild = false;
-	//	teapot::ImguiWrapper::rebuildSwapChain(imgui, vCore, g_w, g_h);
-	//}
-
 	scene.render();
 
 	ImVec2 size = ImGui::GetIO().DisplaySize;
 	size.x -= 400;
-	//if (scene.extent.width != size.x || scene.extent.height != size.y)
-	//{
-	//	if (scene.extent.width != 0 && scene.extent.height != 0)
-	//		teapot::SceneView::destroy(scene, vCore);
-	//	teapot::SceneView::init(scene, vCore, imgui.descriptorPool, mesh, { (uint32_t)size.x, (uint32_t)size.y }, 2);
-	//}
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(size);
@@ -92,13 +80,15 @@ void teapot::Application::display()
 		ImGui::AlignTextToFramePadding();
 		ImGui::Text("Location: ");
 		ImGui::SameLine(100);
-		ImGui::InputFloat3("##1", location, "%.0f");
+		ImGui::InputFloat3("##1", &location[0], "%.0f");
 		ImGui::Text("Rotation: ");
 		ImGui::SameLine(100);
-		ImGui::InputFloat3("##2", rotation, "%.0f");
+		ImGui::InputFloat3("##2", &rotation[0], "%.0f");
 		ImGui::Text("Scale: ");
 		ImGui::SameLine(100);
-		ImGui::InputFloat3("##3", scale, "%.0f");
+		ImGui::InputFloat3("##3", &scale[0], "%.0f");
+
+		mesh.updateTransform(location, rotation, scale);
 	}
 	ImGui::End();
 
@@ -115,7 +105,8 @@ void teapot::Application::resize(int width, int height)
 	ImVec2 size = ImGui::GetIO().DisplaySize;
 	size.x -= 400;
 	if (scene.needToBeResized((uint32_t)size.x, (uint32_t)size.y))
+	{
 		scene.init(mesh, imgui.descriptorPool, (uint32_t)size.x, (uint32_t)size.y, 2);
-
+	}
 	display();
 }

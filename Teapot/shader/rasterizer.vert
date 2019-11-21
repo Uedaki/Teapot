@@ -6,15 +6,18 @@ layout (location = 1) in vec3 icolor;
 
 layout (location = 0) out vec3 fragColor;
 
-layout (binding = 0) uniform TransformBinding
+layout (binding = 0) uniform CameraBinding
 {
-	mat4 model;
 	mat4 view;
 	mat4 proj;
-} tr;
+} camera;
+layout (binding = 1) uniform ObjectBinding
+{
+	mat4 model;
+} object;
 
 void main()
 {
-    gl_Position = tr.proj * tr.view * tr.model * vec4(ipos, 1.0);
+    gl_Position = camera.proj * camera.view * object.model * vec4(ipos, 1.0);
     fragColor = icolor;
 }

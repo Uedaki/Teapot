@@ -20,19 +20,21 @@ set(Teapot_SRC ${Teapot_SOURCE_DIR}/main.cpp
 				${Teapot_SOURCE_DIR}/Application.cpp
 				${Teapot_SOURCE_DIR}/ImguiWrapper.cpp
 				${Teapot_SOURCE_DIR}/SceneView.cpp
-				${Teapot_SOURCE_DIR}/Mesh.cpp)
+				${Teapot_SOURCE_DIR}/Mesh.cpp
+				${Teapot_SOURCE_DIR}/Rasterizer.cpp)
 set(Teapot_CTM_SRC ${Teapot_SOURCE_DIR}/ctm/VkCore.cpp
-					${Teapot_SOURCE_DIR}/ctm/VkRasterizer.cpp
 					${Teapot_SOURCE_DIR}/ctm/VkVertex.cpp
-					${Teapot_SOURCE_DIR}/ctm/VkUtils.cpp)
+					${Teapot_SOURCE_DIR}/ctm/VkUtils.cpp
+					${Teapot_SOURCE_DIR}/ctm/VkMemoryBlock.cpp)
 set(Teapot_INCLUDE ${Teapot_INCLUDE_DIR}/Application.h
 					${Teapot_INCLUDE_DIR}/ImguiWrapper.h
 					${Teapot_INCLUDE_DIR}/SceneView.h
+					${Teapot_INCLUDE_DIR}/Rasterizer.h
 					${Teapot_INCLUDE_DIR}/Mesh.h)
 set(Teapot_CTM_INCLUDE ${Teapot_INCLUDE_DIR}/ctm/VkCore.h
-						${Teapot_INCLUDE_DIR}/ctm/VkRasterizer.h
 						${Teapot_INCLUDE_DIR}/ctm/VkVertex.h
-						${Teapot_INCLUDE_DIR}/ctm/VkUtils.h)
+						${Teapot_INCLUDE_DIR}/ctm/VkUtils.h
+						${Teapot_INCLUDE_DIR}/ctm/VkMemoryBlock.h)
 set(PROJECT_GENERATED_INCLUDE ${Teapot_GEN_FILE_DIR}/Teapot.h)
 
 

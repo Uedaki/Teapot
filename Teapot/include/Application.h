@@ -30,8 +30,8 @@ namespace teapot
 
 		teapot::Mesh mesh;
 
-		float location[3] = {0, 0, 0};
-		float rotation[3] = {0, 0, 0};
-		float scale[3] = {1, 1, 1};
+		glm::vec3 location = {0, 0, 0};
+		glm::vec3 rotation = {0, 0, 0};
+		glm::vec3 scale = {1, 1, 1};
 	};
 }
