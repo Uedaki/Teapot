@@ -37,7 +37,7 @@ namespace
 
 		VkInstanceCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		create_info.enabledExtensionCount = extensions.size();
+		create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 		create_info.ppEnabledExtensionNames = extensions.data();
 #ifdef _DEBUG
 		create_info.enabledLayerCount = 1;
@@ -137,7 +137,7 @@ namespace
 
 		VkDeviceCreateInfo create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		create_info.queueCreateInfoCount = queueCreateInfos.size();
+		create_info.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		create_info.pQueueCreateInfos = queueCreateInfos.data();
 		create_info.enabledExtensionCount = 1;
 		create_info.ppEnabledExtensionNames = device_extensions;

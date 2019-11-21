@@ -1,21 +1,23 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(location = 0) out vec3 fragColor;
+layout (location = 0) in vec3 ipos;
+layout (location = 1) in vec3 icolor;
 
-vec2 positions[3] = vec2[](
-    vec2(0.0, -0.5),
-    vec2(0.5, 0.5),
-    vec2(-0.5, 0.5)
-);
+layout (location = 0) out vec3 fragColor;
 
-vec3 colors[3] = vec3[](
-    vec3(1.0, 0.0, 0.0),
-    vec3(0.0, 1.0, 0.0),
-    vec3(0.0, 0.0, 1.0)
-);
+layout (binding = 0) uniform CameraBinding
+{
+	mat4 view;
+	mat4 proj;
+} camera;
+layout (binding = 1) uniform ObjectBinding
+{
+	mat4 model;
+} object;
 
-void main() {
-    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
-    fragColor = colors[gl_VertexIndex];
+void main()
+{
+    gl_Position = camera.proj * camera.view * object.model * vec4(ipos, 1.0);
+    fragColor = icolor;
 }

@@ -457,7 +457,7 @@ bool ImGui_ImplVulkan_CreateFontsTexture(VkCommandBuffer command_buffer)
     unsigned char* pixels;
     int width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-    size_t upload_size = width*height*4*sizeof(char);
+    size_t upload_size = static_cast<size_t>(width * height * 4 * sizeof(char));
 
     VkResult err;
 
@@ -741,7 +741,7 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
     VkPipelineMultisampleStateCreateInfo ms_info = {};
     ms_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     if (v->MSAASamples != 0)
-        ms_info.rasterizationSamples = v->MSAASamples;
+        ms_info.rasterizationSamples = static_cast<VkSampleCountFlagBits>(v->MSAASamples);
     else
         ms_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 

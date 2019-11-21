@@ -7,7 +7,6 @@
 
 struct GLFWwindow;
 namespace ctm { struct VkCore; }
-namespace teapot { struct SceneView; }
 
 namespace teapot
 {
@@ -19,6 +18,7 @@ namespace teapot
 		static void init(teapot::ImguiWrapper &wrapper, GLFWwindow *win, ctm::VkCore &core);
 		static void destroy(teapot::ImguiWrapper &wrapper, ctm::VkCore &vCore);
 		static void newFrame(teapot::ImguiWrapper &wrapper);
+		static void rebuildSwapChain(teapot::ImguiWrapper &wrapper, ctm::VkCore &vCore, int w, int h);
 		static void render(teapot::ImguiWrapper &wrapper, VkSemaphore sem, ctm::VkCore &vCore);
 	};
 }

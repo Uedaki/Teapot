@@ -2,8 +2,9 @@
 
 #include <glfw/glfw3.h>
 
-#include "ImguiWrapper.h"
 #include "ctm/VkCore.h"
+#include "ImguiWrapper.h"
+#include "SceneView.h"
 
 namespace teapot
 {
@@ -14,13 +15,23 @@ namespace teapot
 		~Application();
 
 		int run();
+		void display();
+
+		void resize(int width = 0, int height = 0);
 
 	private:
 		bool isRunning = false;
 
 		GLFWwindow *win;
 
+		SceneView scene;
 		ImguiWrapper imgui;
 		ctm::VkCore vCore;
+
+		teapot::Mesh mesh;
+
+		glm::vec3 location = {0, 0, 0};
+		glm::vec3 rotation = {0, 0, 0};
+		glm::vec3 scale = {1, 1, 1};
 	};
 }
