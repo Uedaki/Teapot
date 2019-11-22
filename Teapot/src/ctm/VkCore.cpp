@@ -45,7 +45,7 @@ namespace
 		if (vkCreateInstance(&create_info, core.allocator, &core.instance) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create instance");
 #else
-		if (vkCreateInstance(&create_info, allocator, &instance) != VK_SUCCESS)
+		if (vkCreateInstance(&create_info, core.allocator, &core.instance) != VK_SUCCESS)
 			throw std::runtime_error("Failed to create instance");
 #endif
 

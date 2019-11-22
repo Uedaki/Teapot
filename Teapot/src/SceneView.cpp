@@ -25,7 +25,7 @@ void teapot::SceneView::init(teapot::Mesh &mesh, VkDescriptorPool &targetDescrip
 	outDescriptorSets.resize(rasterizer.imageCount);
 
 	createOutputDescriptorLayout();
-	mesh.createDescriptorPool(rasterizer.descriptorSetLayout);
+	mesh.allocDescriptorSet(rasterizer.descriptorSetLayout);
 	for (uint32_t i = 0; i < rasterizer.imageCount; i++)
 	{
 		ctm::VkUtils::createBuffer(vCore, 2 * sizeof(glm::mat4), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffers[i], bufferMemories[i]);
@@ -34,7 +34,7 @@ void teapot::SceneView::init(teapot::Mesh &mesh, VkDescriptorPool &targetDescrip
 
 		glm::mat4 mat[2];
 		mat[0] = glm::lookAt(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));;
-		mat[1] = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f);
+		mat[1] = glm::perspective(glm::radians(45.0f), static_cast<float>(rasterizer.extent.width) / rasterizer.extent.height, 0.1f, 100.0f);
 		mat[1][1][1] *= -1;
 
 		memcpy(data, mat, 2 * sizeof(glm::mat4));
@@ -50,6 +50,8 @@ void teapot::SceneView::init(teapot::Mesh &mesh, VkDescriptorPool &targetDescrip
 
 void teapot::SceneView::destroy()
 {
+
+
 	for (uint32_t i = 0; i < rasterizer.imageCount; i++)
 	{
 		vkDestroyBuffer(vCore.device, buffers[i], vCore.allocator);
@@ -143,21 +145,6 @@ void teapot::SceneView::recordCommandBuffer(VkCommandBuffer &commandBuffer, teap
 
 	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
 		throw std::runtime_error("Failed to begin recording command buffer");
-
-	VkImageMemoryBarrier clearBarrier = {};
-	clearBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	clearBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	clearBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	clearBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	clearBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	clearBarrier.image = image;
-	clearBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	clearBarrier.subresourceRange.baseMipLevel = 0;
-	clearBarrier.subresourceRange.levelCount = 1;
-	clearBarrier.subresourceRange.baseArrayLayer = 0;
-	clearBarrier.subresourceRange.layerCount = 1;
-	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
-						 0, 0, nullptr, 0, nullptr, 1, &clearBarrier);
 
 	VkRenderPassBeginInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

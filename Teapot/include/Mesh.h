@@ -21,8 +21,9 @@ namespace teapot
 
 		void updateTransform(const glm::vec3 &loc, const glm::vec3 &rot, const glm::vec3 &sc);
 
-		void createDescriptorPool(VkDescriptorSetLayout &layout);
+		void allocDescriptorSet(VkDescriptorSetLayout &layout);
 		void updateDescriptorSet(VkBuffer &buffer, uint32_t i);
+		void destroyDescriptorPool();
 
 		VkBuffer &getVertexBuffer(uint32_t currImage) { return (memory[currImage].getBuffer(vBuffer[currImage])); }
 		VkBuffer &getIndexBuffer(uint32_t currImage) { return (memory[currImage].getBuffer(iBuffer[currImage])); }
@@ -36,7 +37,7 @@ namespace teapot
 		glm::vec3 scale = { 1, 1, 1 };
 
 		ctm::VkCore &core;
-		VkDescriptorPool descriptorPool;
+		VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 		std::vector<VkDescriptorSet> descriptorSet;
 
 		std::vector<ctm::VkVertex> vertices = { 

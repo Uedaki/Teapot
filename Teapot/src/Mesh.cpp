@@ -17,8 +17,6 @@ void teapot::Mesh::init(uint32_t newImageCount)
 {
 	imageCount = newImageCount;
 
-	createDescriptorPool();
-
 	vBuffer.resize(imageCount);
 	iBuffer.resize(imageCount);
 	modelMatrixBuffer.resize(imageCount);
@@ -50,7 +48,8 @@ void teapot::Mesh::init(uint32_t newImageCount)
 
 void teapot::Mesh::destroy()
 {
-	vkDestroyDescriptorPool(core.device, descriptorPool, core.allocator);
+	if (descriptorPool != VK_NULL_HANDLE)
+		vkDestroyDescriptorPool(core.device, descriptorPool, core.allocator);
 
 	for (auto &memoryBlock : memory)
 	{
@@ -80,8 +79,13 @@ void teapot::Mesh::createDescriptorPool()
 		throw std::runtime_error("Failed to create VkDescriptorPool");
 }
 
-void teapot::Mesh::createDescriptorPool(VkDescriptorSetLayout &layout)
+void teapot::Mesh::allocDescriptorSet(VkDescriptorSetLayout &layout)
 {
+	if (descriptorPool != VK_NULL_HANDLE)
+		vkDestroyDescriptorPool(core.device, descriptorPool, core.allocator);
+
+	createDescriptorPool();
+
 	std::vector<VkDescriptorSetLayout> layouts(imageCount, layout);
 
 	VkDescriptorSetAllocateInfo alloc_info = {};
@@ -124,6 +128,10 @@ void teapot::Mesh::updateDescriptorSet(VkBuffer &buffer, uint32_t i)
 	descriptorWrite[1].descriptorCount = 1;
 	descriptorWrite[1].pBufferInfo = &objectBufferInfo;
 	vkUpdateDescriptorSets(core.device, 2, descriptorWrite, 0, nullptr);
+}
+
+void teapot::Mesh::destroyDescriptorPool()
+{
 }
 
 void teapot::Mesh::updateTransform(const glm::vec3 &loc, const glm::vec3 &rot, const glm::vec3 &sc)

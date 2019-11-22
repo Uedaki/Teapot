@@ -18,7 +18,7 @@ namespace
 		colorAttachement.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		colorAttachement.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		colorAttachement.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		colorAttachement.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		colorAttachement.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 		colorAttachement.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;// VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		VkAttachmentReference colorReference = {};
