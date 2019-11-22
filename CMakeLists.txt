@@ -37,10 +37,13 @@ set(Teapot_CTM_INCLUDE ${Teapot_INCLUDE_DIR}/ctm/VkCore.h
 						${Teapot_INCLUDE_DIR}/ctm/VkMemoryBlock.h)
 set(PROJECT_GENERATED_INCLUDE ${Teapot_GEN_FILE_DIR}/Teapot.h)
 
-
-
 find_package(OpenGL REQUIRED)
 find_package(Vulkan REQUIRED)
+
+set(PROFILING "" CACHE BOOL "Define if profiling is activated or not")
+if (PROFILING)
+	add_definitions(-DPROFILING)
+endif (PROFILING)
 
 set(GLM_INCLUDE_DIR "" CACHE PATH "Path to the glm include files")
 include_directories(${GLM_INCLUDE_DIR})
