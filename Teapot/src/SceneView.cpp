@@ -6,6 +6,7 @@
 
 #include "ctm/VkUtils.h"
 #include "ctm/TransformMatrix.h"
+#include "profiler/Profiler.h"
 
 teapot::SceneView::SceneView(ctm::VkCore &vCore)
 	: vCore(vCore)
@@ -13,6 +14,8 @@ teapot::SceneView::SceneView(ctm::VkCore &vCore)
 
 void teapot::SceneView::init(teapot::Mesh &mesh, VkDescriptorPool &targetDescriptorPool, uint32_t width, uint32_t height, uint32_t imageCount)
 {
+	PROFILE_FUNCTION("blop");
+
 	if (rasterizer.extent.width != 0 && rasterizer.extent.height != 0)
 		destroy();
 
@@ -50,7 +53,7 @@ void teapot::SceneView::init(teapot::Mesh &mesh, VkDescriptorPool &targetDescrip
 
 void teapot::SceneView::destroy()
 {
-
+	PROFILE_FUNCTION("blop");
 
 	for (uint32_t i = 0; i < rasterizer.imageCount; i++)
 	{

@@ -39,7 +39,7 @@ namespace ctm
 		Configuration config;
 		Queue queue;
 
-#ifdef _DEBUG
+#ifdef VULKAN_DEBUG_LOG
 		VkDebugReportCallbackEXT debugReport = VK_NULL_HANDLE;
 #endif
 

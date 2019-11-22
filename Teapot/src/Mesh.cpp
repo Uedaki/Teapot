@@ -6,6 +6,7 @@
 
 #include "ctm/VkUtils.h"
 #include "ctm/TransformMatrix.h"
+#include "profiler/Profiler.h"
 
 teapot::Mesh::Mesh(ctm::VkCore &core)
 	: core(core)
@@ -15,6 +16,8 @@ teapot::Mesh::Mesh(ctm::VkCore &core)
 
 void teapot::Mesh::init(uint32_t newImageCount)
 {
+	PROFILE_FUNCTION("blop");
+
 	imageCount = newImageCount;
 
 	vBuffer.resize(imageCount);
@@ -48,6 +51,8 @@ void teapot::Mesh::init(uint32_t newImageCount)
 
 void teapot::Mesh::destroy()
 {
+	PROFILE_FUNCTION("blop");
+
 	if (descriptorPool != VK_NULL_HANDLE)
 		vkDestroyDescriptorPool(core.device, descriptorPool, core.allocator);
 

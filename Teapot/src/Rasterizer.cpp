@@ -6,6 +6,9 @@
 
 #include "ctm/VkUtils.h"
 #include "ctm/VkVertex.h"
+#include "profiler/Profiler.h"
+
+#include <iostream>
 
 namespace
 {
@@ -323,6 +326,8 @@ namespace
 
 void teapot::Rasterizer::init(teapot::Rasterizer &rast, ctm::VkCore &core, VkExtent2D extent, uint32_t imageCount)
 {
+	PROFILE_FUNCTION("blop");
+
 	rast.imageCount = imageCount;
 	rast.extent = extent;
 
@@ -348,6 +353,8 @@ void teapot::Rasterizer::init(teapot::Rasterizer &rast, ctm::VkCore &core, VkExt
 
 void teapot::Rasterizer::destroy(teapot::Rasterizer &rast, ctm::VkCore &core)
 {
+	PROFILE_FUNCTION("blop");
+
 	vkFreeCommandBuffers(core.device, rast.commandPool, static_cast<uint32_t>(rast.commandBuffers.size()), rast.commandBuffers.data());
 
 	vkDestroyDescriptorSetLayout(core.device, rast.descriptorSetLayout, core.allocator);
