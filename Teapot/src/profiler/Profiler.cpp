@@ -5,6 +5,8 @@
 #include <chrono>
 #include <thread>
 
+#include "Log.h"
+
 namespace
 {
 	Profiler profiler;
@@ -44,6 +46,8 @@ Profiler::~Profiler()
 {
 	session << "]}";
 	session.close();
+	
+	LOG_MSG("Profile save");
 }
 
 void Profiler::store(const Profiler::ProfileResult &result)

@@ -1,12 +1,20 @@
 #include <iostream>
 
 #include "Application.h"
+#include "Log.h"
 #include "Teapot.h"
 
 int main()
 {
-	std::cout << TEAPOT_PROJECT_NAME << " - version " << TEAPOT_VERSION_MAJOR << "." << TEAPOT_VERSION_MINOR << std::endl;
+	LOG_MSG("%s - version %d.%d", TEAPOT_PROJECT_NAME, TEAPOT_VERSION_MAJOR, TEAPOT_VERSION_MINOR);
 
-	teapot::Application app;
-	return (app.run());
+	try
+	{
+		teapot::Application app;
+		return (app.run());
+	}
+	catch (std::exception & e)
+	{
+		LOG_CRITICAL(e.what());
+	}
 }

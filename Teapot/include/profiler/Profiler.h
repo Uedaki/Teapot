@@ -19,7 +19,7 @@ class Profiler
 		long long duration;
 		std::string name;
 		int pid;
-		int threadId;
+		size_t threadId;
 	};
 
 public:

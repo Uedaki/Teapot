@@ -27,8 +27,8 @@ void teapot::Mesh::init(uint32_t newImageCount)
 	{
 		memory.emplace_back(core);
 
-		vBuffer[i] = memory.back().defineBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, sizeof(vertices[0]) * vertices.size());
-		iBuffer[i] = memory.back().defineBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, sizeof(indices[0]) * indices.size());
+		vBuffer[i] = memory.back().defineBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, static_cast<uint32_t>(sizeof(vertices[0]) * vertices.size()));
+		iBuffer[i] = memory.back().defineBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, static_cast<uint32_t>(sizeof(indices[0]) * indices.size()));
 		modelMatrixBuffer[i] = memory.back().defineBuffer(VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_SHARING_MODE_EXCLUSIVE, sizeof(glm::mat4));
 		memory.back().allocateMemory();
 	

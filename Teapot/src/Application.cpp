@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+#include "Exception.h"
+#include "Log.h"
 #include "Mesh.h"
 #include "Profiler/Profiler.h"
 
@@ -18,6 +20,7 @@ teapot::Application::Application()
 	: scene(vCore)
 	, mesh(vCore)
 {
+	LOG_MSG("Initializing application");
 	PROFILE_FUNCTION("blop");
 
 	glfwInit();
@@ -35,10 +38,12 @@ teapot::Application::Application()
 
 	resize();
 	isRunning = true;
+	LOG_MSG("Application up and running!");
 }
 
 teapot::Application::~Application()
 {
+	LOG_MSG("Cleaning application");
 	PROFILE_FUNCTION("blop");
 
 	mesh.destroy();
@@ -52,7 +57,8 @@ teapot::Application::~Application()
 int teapot::Application::run()
 {
 	if (!isRunning)
-		throw std::runtime_error("Application is not initialized");
+		CRITICAL_EXCEPTION("Application is not initialized");
+
 	while (!glfwWindowShouldClose(win))
 	{
 		PROFILE_SCOPE("blop", "Main loop");

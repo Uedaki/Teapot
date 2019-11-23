@@ -2,10 +2,16 @@
 
 #include <Vulkan/vulkan.h>
 
+#include "Exception.h"
+
 struct GLFWwindow;
+
+#define VK_STATUS(a, msg) a != VK_SUCCESS ? EXCEPTION(msg) : true
+#define VK_CRITICAL_STATUS(a, msg) a != VK_SUCCESS ? CRITICAL_EXCEPTION(msg) : true
 
 namespace ctm
 {
+
 	struct VkCore
 	{
 		struct Configuration

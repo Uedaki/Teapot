@@ -44,11 +44,11 @@ namespace
 #ifdef VULKAN_DEBUG_LOG
 		create_info.enabledLayerCount = 1;
 		create_info.ppEnabledLayerNames = layers;
-		if (vkCreateInstance(&create_info, core.allocator, &core.instance) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create instance");
+		VK_CRITICAL_STATUS(vkCreateInstance(&create_info, core.allocator, &core.instance),
+						  "Failed to create VkInstance");
 #else
-		if (vkCreateInstance(&create_info, core.allocator, &core.instance) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create instance");
+		VK_CRITICAL_STATUS(vkCreateInstance(&create_info, core.allocator, &core.instance),
+							"Failed to create VkInstance");
 #endif
 
 #ifdef VULKAN_DEBUG_LOG

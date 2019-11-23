@@ -31,7 +31,9 @@ set(Teapot_INCLUDE ${Teapot_INCLUDE_DIR}/Application.h
 					${Teapot_INCLUDE_DIR}/ImguiWrapper.h
 					${Teapot_INCLUDE_DIR}/SceneView.h
 					${Teapot_INCLUDE_DIR}/Rasterizer.h
-					${Teapot_INCLUDE_DIR}/Mesh.h)
+					${Teapot_INCLUDE_DIR}/Mesh.h
+					${Teapot_INCLUDE_DIR}/Log.h
+					${Teapot_INCLUDE_DIR}/Exception.h)
 set(Teapot_CTM_INCLUDE ${Teapot_INCLUDE_DIR}/ctm/VkCore.h
 						${Teapot_INCLUDE_DIR}/ctm/VkVertex.h
 						${Teapot_INCLUDE_DIR}/ctm/VkUtils.h

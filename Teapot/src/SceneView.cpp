@@ -156,7 +156,7 @@ void teapot::SceneView::recordCommandBuffer(VkCommandBuffer &commandBuffer, teap
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = rasterizer.extent;
 
-	VkClearValue clearColor = { 0.27, 0.28, 0.26, 1.0f};
+	VkClearValue clearColor = { 0.27f, 0.28f, 0.26f, 1.0f};
 	renderPassInfo.clearValueCount = 1;
 	renderPassInfo.pClearValues = &clearColor;
 
