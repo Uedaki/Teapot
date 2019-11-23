@@ -2,7 +2,10 @@
 
 #include <stdexcept>
 
+#include "Exception.h"
+#include "Log.h"
 #include "Mesh.h"
+#include "Profiler/Profiler.h"
 
 namespace
 {
@@ -17,9 +20,12 @@ teapot::Application::Application()
 	: scene(vCore)
 	, mesh(vCore)
 {
+	LOG_MSG("Initializing application");
+	PROFILE_FUNCTION("blop");
+
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 	win = glfwCreateWindow(1280, 720, "Vulkan", nullptr, nullptr);
 	glfwSetFramebufferSizeCallback(win, glfwResizeCallback);
@@ -32,10 +38,14 @@ teapot::Application::Application()
 
 	resize();
 	isRunning = true;
+	LOG_MSG("Application up and running!");
 }
 
 teapot::Application::~Application()
 {
+	LOG_MSG("Cleaning application");
+	PROFILE_FUNCTION("blop");
+
 	mesh.destroy();
 	scene.destroy();
 	teapot::ImguiWrapper::destroy(imgui, vCore);
@@ -47,9 +57,11 @@ teapot::Application::~Application()
 int teapot::Application::run()
 {
 	if (!isRunning)
-		throw std::runtime_error("Application is not initialized");
+		CRITICAL_EXCEPTION("Application is not initialized");
+
 	while (!glfwWindowShouldClose(win))
 	{
+		PROFILE_SCOPE("blop", "Main loop");
 		glfwPollEvents();
 		ImguiWrapper::newFrame(imgui);
 		display();
@@ -60,43 +72,49 @@ int teapot::Application::run()
 
 void teapot::Application::display()
 {
+	PROFILE_FUNCTION("blop");
+
 	scene.render();
 
-	ImVec2 size = ImGui::GetIO().DisplaySize;
-	size.x -= 400;
-
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::SetNextWindowSize(size);
-	ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-	ImGui::Image((void *)&scene.getOutputDescriptorSet(), ImGui::GetContentRegionAvail());
-	ImGui::End();
-
-	ImGui::SetNextWindowPos(ImVec2(size.x, 0));
-	ImGui::SetNextWindowSize(ImVec2(400, size.y));
-	ImGui::Begin("Details panel", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-	static bool isDisplayed = true;
-	if (ImGui::CollapsingHeader("Transform", nullptr, ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::AlignTextToFramePadding();
-		ImGui::Text("Location: ");
-		ImGui::SameLine(100);
-		ImGui::InputFloat3("##1", &location[0], "%.0f");
-		ImGui::Text("Rotation: ");
-		ImGui::SameLine(100);
-		ImGui::InputFloat3("##2", &rotation[0], "%.0f");
-		ImGui::Text("Scale: ");
-		ImGui::SameLine(100);
-		ImGui::InputFloat3("##3", &scale[0], "%.0f");
+		ImVec2 size = ImGui::GetIO().DisplaySize;
+		size.x -= 400;
 
-		mesh.updateTransform(location, rotation, scale);
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowSize(size);
+		ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+		ImGui::Image((void *)&scene.getOutputDescriptorSet(), ImGui::GetContentRegionAvail());
+		ImGui::End();
+
+		ImGui::SetNextWindowPos(ImVec2(size.x, 0));
+		ImGui::SetNextWindowSize(ImVec2(400, size.y));
+		ImGui::Begin("Details panel", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+		static bool isDisplayed = true;
+		if (ImGui::CollapsingHeader("Transform", nullptr, ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Location: ");
+			ImGui::SameLine(100);
+			ImGui::InputFloat3("##1", &location[0], "%.0f");
+			ImGui::Text("Rotation: ");
+			ImGui::SameLine(100);
+			ImGui::InputFloat3("##2", &rotation[0], "%.0f");
+			ImGui::Text("Scale: ");
+			ImGui::SameLine(100);
+			ImGui::InputFloat3("##3", &scale[0], "%.0f");
+
+			mesh.updateTransform(location, rotation, scale);
+		}
+		ImGui::End();
 	}
-	ImGui::End();
 
 	ImguiWrapper::render(imgui, scene.getCurrentSignalSemaphore(), vCore);
 }
 
 void teapot::Application::resize(int width, int height)
 {
+	PROFILE_FUNCTION("blop");
+
 	if (width != 0 && height != 0)
 		teapot::ImguiWrapper::rebuildSwapChain(imgui, vCore, width, height);
 	

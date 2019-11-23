@@ -7,9 +7,11 @@
 #include <stdexcept>
 #include <vector>
 
+#include "profiler/Profiler.h"
+
 namespace
 {
-#ifdef _DEBUG
+#ifdef VULKAN_DEBUG_LOG
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallback(VkDebugReportFlagsEXT , 
 													   VkDebugReportObjectTypeEXT objectType, 
 													   uint64_t , size_t , int32_t , const char *,
@@ -23,7 +25,7 @@ namespace
 
 	void createInstance(ctm::VkCore &core)
 	{
-#ifdef _DEBUG
+#ifdef VULKAN_DEBUG_LOG
 		const char *layers[] = { "VK_LAYER_LUNARG_standard_validation" };
 #endif
 
@@ -31,7 +33,7 @@ namespace
 		uint32_t glfwExtensionCount = 0;
 		glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 		std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-#ifdef _DEBUG
+#ifdef VULKAN_DEBUG_LOG
 		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
 
@@ -39,17 +41,17 @@ namespace
 		create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 		create_info.ppEnabledExtensionNames = extensions.data();
-#ifdef _DEBUG
+#ifdef VULKAN_DEBUG_LOG
 		create_info.enabledLayerCount = 1;
 		create_info.ppEnabledLayerNames = layers;
-		if (vkCreateInstance(&create_info, core.allocator, &core.instance) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create instance");
+		VK_CRITICAL_STATUS(vkCreateInstance(&create_info, core.allocator, &core.instance),
+						  "Failed to create VkInstance");
 #else
-		if (vkCreateInstance(&create_info, allocator, &instance) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create instance");
+		VK_CRITICAL_STATUS(vkCreateInstance(&create_info, core.allocator, &core.instance),
+							"Failed to create VkInstance");
 #endif
 
-#ifdef _DEBUG
+#ifdef VULKAN_DEBUG_LOG
 		auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(core.instance, "vkCreateDebugReportCallbackEXT");
 
 		VkDebugReportCallbackCreateInfoEXT debugReportInfo = {};
@@ -198,6 +200,8 @@ namespace
 
 void ctm::VkCore::init(VkCore &core, GLFWwindow *win)
 {
+	PROFILE_FUNCTION("blop");
+
 	int width;
 	int height;
 	glfwGetWindowSize(win, &width, &height);
@@ -220,8 +224,10 @@ void ctm::VkCore::init(VkCore &core, GLFWwindow *win)
 
 void ctm::VkCore::destroy(VkCore &core)
 {
+	PROFILE_FUNCTION("blop");
+
 	vkDestroyDevice(core.device, core.allocator);
-#ifdef _DEBUG
+#ifdef VULKAN_DEBUG_LOG
 	auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(core.instance, "vkDestroyDebugReportCallbackEXT");
 	vkDestroyDebugReportCallbackEXT(core.instance, core.debugReport, core.allocator);
 #endif

@@ -26,21 +26,43 @@ set(Teapot_CTM_SRC ${Teapot_SOURCE_DIR}/ctm/VkCore.cpp
 					${Teapot_SOURCE_DIR}/ctm/VkVertex.cpp
 					${Teapot_SOURCE_DIR}/ctm/VkUtils.cpp
 					${Teapot_SOURCE_DIR}/ctm/VkMemoryBlock.cpp)
+set(Teapot_PROFILER_SRC ${Teapot_SOURCE_DIR}/profiler/Profiler.cpp)
 set(Teapot_INCLUDE ${Teapot_INCLUDE_DIR}/Application.h
 					${Teapot_INCLUDE_DIR}/ImguiWrapper.h
 					${Teapot_INCLUDE_DIR}/SceneView.h
 					${Teapot_INCLUDE_DIR}/Rasterizer.h
-					${Teapot_INCLUDE_DIR}/Mesh.h)
+					${Teapot_INCLUDE_DIR}/Mesh.h
+					${Teapot_INCLUDE_DIR}/Log.h
+					${Teapot_INCLUDE_DIR}/Exception.h)
 set(Teapot_CTM_INCLUDE ${Teapot_INCLUDE_DIR}/ctm/VkCore.h
 						${Teapot_INCLUDE_DIR}/ctm/VkVertex.h
 						${Teapot_INCLUDE_DIR}/ctm/VkUtils.h
 						${Teapot_INCLUDE_DIR}/ctm/VkMemoryBlock.h)
+set(Teapot_PROFILER_INCLUDE ${Teapot_INCLUDE_DIR}/profiler/Profiler.h)
 set(PROJECT_GENERATED_INCLUDE ${Teapot_GEN_FILE_DIR}/Teapot.h)
-
-
 
 find_package(OpenGL REQUIRED)
 find_package(Vulkan REQUIRED)
+
+set(PROFILING "" CACHE BOOL "Define if profiling is activated or not")
+if (PROFILING)
+	add_definitions(-DPROFILING)
+endif (PROFILING)
+
+set(LOG_INFO ON CACHE BOOL "Define if the application will output log")
+if (LOG_INFO)
+	add_definitions(-DLOG_INFO)
+endif (LOG_INFO)
+
+set(DEBUG_LOG "" CACHE BOOL "Define if the application will output debug info")
+if (DEBUG_LOG)
+	add_definitions(-DDEBUG_LOG)
+endif (DEBUG_LOG)
+
+set(VULKAN_DEBUG_LOG "" CACHE BOOL "Define if vulkan debug layer are used or not")
+if (VULKAN_DEBUG_LOG)
+	add_definitions(-DVULKAN_DEBUG_LOG)
+endif (VULKAN_DEBUG_LOG)
 
 set(GLM_INCLUDE_DIR "" CACHE PATH "Path to the glm include files")
 include_directories(${GLM_INCLUDE_DIR})
@@ -67,15 +89,18 @@ include_directories("${IMGUI_DIR}/examples")
 
 add_executable(Teapot ${Teapot_SRC} ${Teapot_INCLUDE} ${Teapot_GENERATED_INCLUDE}
 									${Teapot_CTM_SRC} ${Teapot_CTM_INCLUDE}
+									${Teapot_PROFILER_SRC} ${Teapot_PROFILER_INCLUDE}
 										${IMGUI_SRC} ${IMGUI_INCLUDE})
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Teapot)
 
 source_group("Sources" FILES ${Teapot_SRC})
 source_group("Sources\\ctm" FILES ${Teapot_CTM_SRC})
+source_group("Sources\\profiler" FILES ${Teapot_PROFILER_SRC})
 source_group("Sources\\imgui" FILES ${IMGUI_SRC})
 
 source_group("Include" FILES ${Teapot_INCLUDE})
 source_group("Include\\ctm" FILES ${Teapot_CTM_INCLUDE})
+source_group("Include\\profiler" FILES ${Teapot_PROFILER_INCLUDE})
 source_group("Include\\generated" FILES ${Teapot_GENERATED_INCLUDE})
 source_group("Include\\imgui" FILES ${IMGUI_INCLUDE})
 
