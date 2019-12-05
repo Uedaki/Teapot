@@ -84,7 +84,7 @@ void teapot::Mesh::createDescriptorPool()
 		throw std::runtime_error("Failed to create VkDescriptorPool");
 }
 
-void teapot::Mesh::allocDescriptorSet(VkDescriptorSetLayout &layout)
+void teapot::Mesh::allocDescriptorSet(VkDescriptorSetLayout layout)
 {
 	if (descriptorPool != VK_NULL_HANDLE)
 		vkDestroyDescriptorPool(core.device, descriptorPool, core.allocator);

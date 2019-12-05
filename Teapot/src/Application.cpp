@@ -74,7 +74,7 @@ void teapot::Application::display()
 {
 	PROFILE_FUNCTION("blop");
 
-	scene.render();
+	scene.render(mesh);
 
 	{
 		ImVec2 size = ImGui::GetIO().DisplaySize;
@@ -104,6 +104,27 @@ void teapot::Application::display()
 			ImGui::InputFloat3("##3", &scale[0], "%.0f");
 
 			mesh.updateTransform(location, rotation, scale);
+		}
+		ImGui::Text("Edition mode:");
+		if (ImGui::RadioButton("None", mode == EditMode::NONE))
+		{
+			mode = EditMode::NONE;
+			scene.changeMode(mode);
+		}
+		if (ImGui::RadioButton("Face", mode == EditMode::FACE))
+		{
+			mode = EditMode::FACE;
+			scene.changeMode(mode);
+		}
+		if (ImGui::RadioButton("Edge", mode == EditMode::EDGE))
+		{
+			mode = EditMode::EDGE;
+			scene.changeMode(mode);
+		}
+		if (ImGui::RadioButton("Vertex", mode == EditMode::VERTEX))
+		{
+			mode = EditMode::VERTEX;
+			scene.changeMode(mode);
 		}
 		ImGui::End();
 	}

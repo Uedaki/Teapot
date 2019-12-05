@@ -21,7 +21,7 @@ namespace teapot
 
 		void updateTransform(const glm::vec3 &loc, const glm::vec3 &rot, const glm::vec3 &sc);
 
-		void allocDescriptorSet(VkDescriptorSetLayout &layout);
+		void allocDescriptorSet(VkDescriptorSetLayout layout);
 		void updateDescriptorSet(VkBuffer &buffer, uint32_t i);
 		void destroyDescriptorPool();
 
@@ -41,15 +41,15 @@ namespace teapot
 		std::vector<VkDescriptorSet> descriptorSet;
 
 		std::vector<ctm::VkVertex> vertices = { 
-			{{1, 1, 1}, {1, 1, 1}},
-			{{-1, 1, 1}, {1, 1, 1}},
-			{{-1, -1, 1}, {1, 1, 1}},
-			{{1, -1, 1}, {1, 1, 1}},
+			{{1, 1, 1}, {1, 0, 0}},
+			{{-1, 1, 1}, {0, 1, 0}},
+			{{-1, -1, 1}, {1, 0, 0}},
+			{{1, -1, 1}, {0, 0, 1}},
 
-			{{1, 1, -1}, {1, 1, 1}},
-			{{1, -1, -1}, {1, 1, 1}},
-			{{-1, -1, -1}, {1, 1, 1}},
-			{{-1, 1, -1}, {1, 1, 1}},
+			{{1, 1, -1}, {1, 0, 0}},
+			{{1, -1, -1}, {0, 1, 0}},
+			{{-1, -1, -1}, {1, 0, 0}},
+			{{-1, 1, -1}, {0, 0, 1}},
 		};
 		std::vector<uint32_t> indices = {
 			0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 5, 4, 0, 0, 3, 5, 0, 4, 7, 7, 1, 0, 1, 7, 6, 6, 2, 1, 5, 3, 2, 2, 6, 5

@@ -20,4 +20,6 @@ void main()
 {
     gl_Position = camera.proj * camera.view * object.model * vec4(ipos, 1.0);
     fragColor = icolor;
+
+	gl_PointSize = 10;
 }

@@ -9,27 +9,35 @@
 #include "profiler/Profiler.h"
 
 teapot::SceneView::SceneView(ctm::VkCore &vCore)
-	: vCore(vCore)
+	: vCore(vCore), pipelinePool(vCore)
 {}
 
 void teapot::SceneView::init(teapot::Mesh &mesh, VkDescriptorPool &targetDescriptorPool, uint32_t width, uint32_t height, uint32_t imageCount)
 {
 	PROFILE_FUNCTION("blop");
 
-	if (rasterizer.extent.width != 0 && rasterizer.extent.height != 0)
+	if (rasterizerImg.extent.width != 0 && rasterizerImg.extent.height != 0)
 		destroy();
 
-	teapot::Rasterizer::init(rasterizer, vCore, { width, height }, imageCount);
+	pipelinePool.init({width, height});
+	mainPipeline = pipelinePool.createPipeline(VK_POLYGON_MODE_FILL, "shader/rasterizer.vert.spv", "shader/rasterizer.frag.spv");
 
-	buffers.resize(rasterizer.imageCount);
-	bufferMemories.resize(rasterizer.imageCount);
-	semaphores.resize(rasterizer.imageCount);
-	fences.resize(rasterizer.imageCount);
-	outDescriptorSets.resize(rasterizer.imageCount);
+	rasterizerImg.init(vCore, pipelinePool.getRenderPass(), { width, height }, imageCount);
+
+	buffers.resize(rasterizerImg.imageCount);
+	bufferMemories.resize(rasterizerImg.imageCount);
+
+	semaphores.resize(rasterizerImg.imageCount);
+	fences.resize(rasterizerImg.imageCount);
+	
+	commandBuffers.resize(rasterizerImg.imageCount);
+
+	outDescriptorSets.resize(rasterizerImg.imageCount);
 
 	createOutputDescriptorLayout();
-	mesh.allocDescriptorSet(rasterizer.descriptorSetLayout);
-	for (uint32_t i = 0; i < rasterizer.imageCount; i++)
+	createCommandPool();
+	mesh.allocDescriptorSet(pipelinePool.getDescriptorSetLayout());
+	for (uint32_t i = 0; i < rasterizerImg.imageCount; i++)
 	{
 		ctm::VkUtils::createBuffer(vCore, 2 * sizeof(glm::mat4), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, buffers[i], bufferMemories[i]);
 		void *data;
@@ -37,7 +45,7 @@ void teapot::SceneView::init(teapot::Mesh &mesh, VkDescriptorPool &targetDescrip
 
 		glm::mat4 mat[2];
 		mat[0] = glm::lookAt(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));;
-		mat[1] = glm::perspective(glm::radians(45.0f), static_cast<float>(rasterizer.extent.width) / rasterizer.extent.height, 0.1f, 100.0f);
+		mat[1] = glm::perspective(glm::radians(45.0f), static_cast<float>(rasterizerImg.extent.width) / rasterizerImg.extent.height, 0.1f, 100.0f);
 		mat[1][1][1] *= -1;
 
 		memcpy(data, mat, 2 * sizeof(glm::mat4));
@@ -45,9 +53,9 @@ void teapot::SceneView::init(teapot::Mesh &mesh, VkDescriptorPool &targetDescrip
 
 		mesh.updateDescriptorSet(buffers[i], i);
 
-		recordCommandBuffer(rasterizer.commandBuffers[i], mesh, rasterizer.images[i], rasterizer.frameBuffers[i], i);
+		recordCommandBuffer(commandBuffers[i], mesh, rasterizerImg.images[i], rasterizerImg.frameBuffers[i], i);
 		createSyncObj(semaphores[i], fences[i]);
-		createOutputDescriptorSet(outDescriptorSets[i], targetDescriptorPool, rasterizer.imageViews[i]);
+		createOutputDescriptorSet(outDescriptorSets[i], targetDescriptorPool, rasterizerImg.imageViews[i]);
 	}
 }
 
@@ -55,7 +63,7 @@ void teapot::SceneView::destroy()
 {
 	PROFILE_FUNCTION("blop");
 
-	for (uint32_t i = 0; i < rasterizer.imageCount; i++)
+	for (uint32_t i = 0; i < rasterizerImg.imageCount; i++)
 	{
 		vkDestroyBuffer(vCore.device, buffers[i], vCore.allocator);
 		vkFreeMemory(vCore.device, bufferMemories[i], vCore.allocator);
@@ -65,8 +73,95 @@ void teapot::SceneView::destroy()
 	}
 
 	vkDestroyDescriptorSetLayout(vCore.device, outDescriptorSetLayout, vCore.allocator);
+	vkDestroyCommandPool(vCore.device, commandPool, vCore.allocator);
+	rasterizerImg.destroy(vCore);
+	pipelinePool.destroy();
+}
 
-	teapot::Rasterizer::destroy(rasterizer, vCore);
+void teapot::SceneView::createCommandPool()
+{
+	VkCommandPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	poolInfo.queueFamilyIndex = vCore.queue.graphicsIdx;
+	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+	if (vkCreateCommandPool(vCore.device, &poolInfo, vCore.allocator, &commandPool) != VK_SUCCESS)
+		throw std::runtime_error("Failed to create VkCommandPool");
+
+	VkCommandBufferAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool = commandPool;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+
+	if (vkAllocateCommandBuffers(vCore.device, &allocInfo, commandBuffers.data()) != VK_SUCCESS)
+		throw std::runtime_error("Failed to allocate VkCommandBuffers");
+}
+
+void teapot::SceneView::recordCommandBuffer(VkCommandBuffer &commandBuffer, teapot::Mesh &mesh, VkImage &image, VkFramebuffer &frame, uint32_t imageIdx)
+{
+	PROFILE_FUNCTION("blop");
+
+	VkCommandBufferBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
+		throw std::runtime_error("Failed to begin recording command buffer");
+
+	VkRenderPassBeginInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = pipelinePool.getRenderPass();
+	renderPassInfo.framebuffer = frame;
+	renderPassInfo.renderArea.offset = { 0, 0 };
+	renderPassInfo.renderArea.extent = rasterizerImg.extent;
+
+	VkClearValue clearColor = { 0.27f, 0.28f, 0.26f, 1.0f };
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	VkDeviceSize p = 0;
+	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mainPipeline.get());
+
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mesh.getVertexBuffer(imageIdx), &p);
+	vkCmdBindIndexBuffer(commandBuffer, mesh.getIndexBuffer(imageIdx), 0, VK_INDEX_TYPE_UINT32);
+
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelinePool.getPipelineLayout(), 0, 1, &mesh.descriptorSet[imageIdx], 0, nullptr);
+
+	vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh.indices.size(), 1, 0, 0, 0);
+
+	if (secondaryPipeline)
+	{
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, secondaryPipeline.get());
+
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mesh.getVertexBuffer(imageIdx), &p);
+		vkCmdBindIndexBuffer(commandBuffer, mesh.getIndexBuffer(imageIdx), 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelinePool.getPipelineLayout(), 0, 1, &mesh.descriptorSet[imageIdx], 0, nullptr);
+
+		vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh.indices.size(), 1, 0, 0, 0);
+	}
+	vkCmdEndRenderPass(commandBuffer);
+
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = image;
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = 1;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+	barrier.srcAccessMask = 0;
+	barrier.dstAccessMask = 0;
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+						 0, 0, nullptr, 0, nullptr, 1, &barrier);
+
+	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
+		throw std::runtime_error("failed to record command buffer!");
 }
 
 void teapot::SceneView::createOutputDescriptorLayout()
@@ -75,7 +170,7 @@ void teapot::SceneView::createOutputDescriptorLayout()
 	binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	binding.descriptorCount = 1;
 	binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	binding.pImmutableSamplers = &rasterizer.imageSampler;
+	binding.pImmutableSamplers = &rasterizerImg.imageSampler;
 	VkDescriptorSetLayoutCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	info.bindingCount = 1;
@@ -95,7 +190,7 @@ void teapot::SceneView::createOutputDescriptorSet(VkDescriptorSet &outDescriptor
 		throw std::runtime_error("Failed to create VkDescriptorSet");
 
 	VkDescriptorImageInfo descImage = {};
-	descImage.sampler = rasterizer.imageSampler;
+	descImage.sampler = rasterizerImg.imageSampler;
 	descImage.imageView = imageView;
 	descImage.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	VkWriteDescriptorSet writeDesc = {};
@@ -121,9 +216,11 @@ void teapot::SceneView::createSyncObj(VkSemaphore &semaphore, VkFence &fence)
 		throw std::runtime_error("Failed to create VkFence");
 }
 
-void teapot::SceneView::render()
+void teapot::SceneView::render(teapot::Mesh &mesh)
 {
-	currentImage = (currentImage + 1) % rasterizer.imageCount;
+	currentImage = (currentImage + 1) % rasterizerImg.imageCount;
+
+	recordCommandBuffer(commandBuffers[currentImage], mesh, rasterizerImg.images[currentImage], rasterizerImg.frameBuffers[currentImage], currentImage);
 
 	vkWaitForFences(vCore.device, 1, &fences[currentImage], VK_TRUE, UINT64_MAX);
 	vkResetFences(vCore.device, 1, &fences[currentImage]);
@@ -134,70 +231,16 @@ void teapot::SceneView::render()
 	submitInfo.pWaitSemaphores = 0;
 	submitInfo.pWaitDstStageMask = nullptr;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &rasterizer.commandBuffers[currentImage];
+	submitInfo.pCommandBuffers = &commandBuffers[currentImage];
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = &semaphores[currentImage];
 	if (vkQueueSubmit(vCore.queue.graphics, 1, &submitInfo, fences[currentImage]) != VK_SUCCESS)
 		throw std::runtime_error("failed to submit draw command buffer!");
 }
 
-void teapot::SceneView::recordCommandBuffer(VkCommandBuffer &commandBuffer, teapot::Mesh &mesh, VkImage &image, VkFramebuffer &frame, uint32_t imageIdx)
-{
-	VkCommandBufferBeginInfo beginInfo = {};
-	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS)
-		throw std::runtime_error("Failed to begin recording command buffer");
-
-	VkRenderPassBeginInfo renderPassInfo = {};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = rasterizer.renderPass;
-	renderPassInfo.framebuffer = frame;
-	renderPassInfo.renderArea.offset = { 0, 0 };
-	renderPassInfo.renderArea.extent = rasterizer.extent;
-
-	VkClearValue clearColor = { 0.27f, 0.28f, 0.26f, 1.0f};
-	renderPassInfo.clearValueCount = 1;
-	renderPassInfo.pClearValues = &clearColor;
-
-	VkDeviceSize p = 0;
-	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rasterizer.pipeline);
-
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &mesh.getVertexBuffer(imageIdx), &p);
-	vkCmdBindIndexBuffer(commandBuffer, mesh.getIndexBuffer(imageIdx), 0, VK_INDEX_TYPE_UINT32);
-
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, rasterizer.pipelineLayout, 0, 1, &mesh.descriptorSet[imageIdx], 0, nullptr);
-
-	vkCmdDrawIndexed(commandBuffer, (uint32_t)mesh.indices.size(), 1, 0, 0, 0);
-
-	vkCmdEndRenderPass(commandBuffer);
-
-	VkImageMemoryBarrier barrier = {};
-	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = image;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	barrier.subresourceRange.baseMipLevel = 0;
-	barrier.subresourceRange.levelCount = 1;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount = 1;
-	barrier.srcAccessMask = 0;
-	barrier.dstAccessMask = 0;
-	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-						 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
-	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
-		throw std::runtime_error("failed to record command buffer!");
-}
-
 bool teapot::SceneView::needToBeResized(uint32_t newWidth, uint32_t newHeight) const
 {
-	if (rasterizer.extent.width != newWidth || rasterizer.extent.height != newHeight)
+	if (rasterizerImg.extent.width != newWidth || rasterizerImg.extent.height != newHeight)
 		return (true);
 	return (false);
 }
@@ -205,4 +248,44 @@ bool teapot::SceneView::needToBeResized(uint32_t newWidth, uint32_t newHeight) c
 void teapot::SceneView::SceneGui::drawGui()
 {
 
+}
+
+void teapot::SceneView::changeMode(teapot::EditMode mode)
+{
+	VkPolygonMode polyMode;
+	std::string vert;
+	std::string frag;
+
+	switch (mode)
+	{
+	case teapot::EditMode::FACE:
+		polyMode = VK_POLYGON_MODE_FILL;
+		vert = "shader/rasterizer.vert.spv";
+		frag = "shader/rasterizer.frag.spv";
+		break;
+	case teapot::EditMode::EDGE:
+		polyMode = VK_POLYGON_MODE_LINE;
+		vert = "shader/rasterizer.vert.spv";
+		frag = "shader/rasterizerLine.frag.spv";
+		break;
+	case teapot::EditMode::VERTEX:
+		polyMode = VK_POLYGON_MODE_POINT;
+		vert = "shader/rasterizer.vert.spv";
+		frag = "shader/rasterizerPoint.frag.spv";
+		break;
+	}
+
+	if (secondaryPipeline)
+	{
+		if (mode == EditMode::NONE)
+		{
+			secondaryPipeline.destroy();
+			return;
+		}
+		secondaryPipeline.recreate(polyMode, vert, frag);
+	}
+	else if (mode != EditMode::NONE)
+	{
+		secondaryPipeline = pipelinePool.createPipeline(polyMode, vert, frag);
+	}
 }
