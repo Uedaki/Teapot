@@ -18,27 +18,38 @@ include_directories("${Teapot_INCLUDE_DIR}")
 include_directories("${Teapot_GEN_FILE_DIR}")
 set(Teapot_SRC ${Teapot_SOURCE_DIR}/main.cpp
 				${Teapot_SOURCE_DIR}/Application.cpp
-				${Teapot_SOURCE_DIR}/ImguiWrapper.cpp
-				${Teapot_SOURCE_DIR}/SceneView.cpp
-				${Teapot_SOURCE_DIR}/Mesh.cpp
-				${Teapot_SOURCE_DIR}/Rasterizer.cpp)
-set(Teapot_CTM_SRC ${Teapot_SOURCE_DIR}/ctm/VkCore.cpp
-					${Teapot_SOURCE_DIR}/ctm/VkVertex.cpp
-					${Teapot_SOURCE_DIR}/ctm/VkUtils.cpp
-					${Teapot_SOURCE_DIR}/ctm/VkMemoryBlock.cpp)
-set(Teapot_PROFILER_SRC ${Teapot_SOURCE_DIR}/profiler/Profiler.cpp)
+				${Teapot_SOURCE_DIR}/Collection.cpp
+				${Teapot_SOURCE_DIR}/Profiler.cpp)
+set(Teapot_SRC_VULKAN ${Teapot_SOURCE_DIR}/vulkan/Context.cpp
+						${Teapot_SOURCE_DIR}/vulkan/Command.cpp
+						${Teapot_SOURCE_DIR}/vulkan/Pipeline.cpp
+						${Teapot_SOURCE_DIR}/vulkan/Mesh.cpp
+						${Teapot_SOURCE_DIR}/vulkan/Utils.cpp
+						${Teapot_SOURCE_DIR}/vulkan/Vertex.cpp
+						${Teapot_SOURCE_DIR}/vulkan/SingleTimeCommandPool.cpp
+						${Teapot_SOURCE_DIR}/vulkan/SceneEditor.cpp)
+set(Teapot_SRC_GUI ${Teapot_SOURCE_DIR}/gui/Manager.cpp
+					${Teapot_SOURCE_DIR}/gui/SceneEditorWidget.cpp
+					${Teapot_SOURCE_DIR}/gui/AttributeEditorWidget.cpp)
+					
+					
 set(Teapot_INCLUDE ${Teapot_INCLUDE_DIR}/Application.h
-					${Teapot_INCLUDE_DIR}/ImguiWrapper.h
-					${Teapot_INCLUDE_DIR}/SceneView.h
-					${Teapot_INCLUDE_DIR}/Rasterizer.h
-					${Teapot_INCLUDE_DIR}/Mesh.h
+					${Teapot_INCLUDE_DIR}/Collection.h
+					${Teapot_INCLUDE_DIR}/Profiler.h
 					${Teapot_INCLUDE_DIR}/Log.h
 					${Teapot_INCLUDE_DIR}/Exception.h)
-set(Teapot_CTM_INCLUDE ${Teapot_INCLUDE_DIR}/ctm/VkCore.h
-						${Teapot_INCLUDE_DIR}/ctm/VkVertex.h
-						${Teapot_INCLUDE_DIR}/ctm/VkUtils.h
-						${Teapot_INCLUDE_DIR}/ctm/VkMemoryBlock.h)
-set(Teapot_PROFILER_INCLUDE ${Teapot_INCLUDE_DIR}/profiler/Profiler.h)
+set(Teapot_INCLUDE_VULKAN ${Teapot_INCLUDE_DIR}/vulkan/Context.h
+						${Teapot_INCLUDE_DIR}/vulkan/Command.h
+						${Teapot_INCLUDE_DIR}/vulkan/Pipeline.h
+						${Teapot_INCLUDE_DIR}/vulkan/Mesh.h
+						${Teapot_INCLUDE_DIR}/vulkan/Utils.h
+						${Teapot_INCLUDE_DIR}/vulkan/Vertex.h
+						${Teapot_INCLUDE_DIR}/vulkan/SingleTimeCommandPool.h
+						${Teapot_INCLUDE_DIR}/vulkan/SceneEditor.h)
+set(Teapot_INCLUDE_GUI ${Teapot_INCLUDE_DIR}/gui/Manager.h
+						${Teapot_INCLUDE_DIR}/gui/Widget.h
+						${Teapot_INCLUDE_DIR}/gui/SceneEditorWidget.h
+						${Teapot_INCLUDE_DIR}/gui/AttributeEditorWidget.h)
 set(PROJECT_GENERATED_INCLUDE ${Teapot_GEN_FILE_DIR}/Teapot.h)
 
 find_package(OpenGL REQUIRED)
@@ -88,21 +99,25 @@ include_directories("${IMGUI_DIR}/examples")
 
 
 add_executable(Teapot ${Teapot_SRC} ${Teapot_INCLUDE} ${Teapot_GENERATED_INCLUDE}
-									${Teapot_CTM_SRC} ${Teapot_CTM_INCLUDE}
-									${Teapot_PROFILER_SRC} ${Teapot_PROFILER_INCLUDE}
-										${IMGUI_SRC} ${IMGUI_INCLUDE})
+									${Teapot_SRC_VULKAN} ${Teapot_INCLUDE_VULKAN}
+									${Teapot_SRC_GUI} ${Teapot_INCLUDE_GUI}
+									${IMGUI_SRC} ${IMGUI_INCLUDE}
+									
+									${Teapot_SRC_TRASH} ${Teapot_INCLUDE_TRASH}
+									${Teapot_CTM_SRC} ${Teapot_CTM_INCLUDE})
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Teapot)
 
 source_group("Sources" FILES ${Teapot_SRC})
-source_group("Sources\\ctm" FILES ${Teapot_CTM_SRC})
-source_group("Sources\\profiler" FILES ${Teapot_PROFILER_SRC})
-source_group("Sources\\imgui" FILES ${IMGUI_SRC})
+source_group("Sources\\vulkan" FILES ${Teapot_SRC_VULKAN})
+source_group("Sources\\gui" FILES ${Teapot_SRC_GUI})
 
 source_group("Include" FILES ${Teapot_INCLUDE})
-source_group("Include\\ctm" FILES ${Teapot_CTM_INCLUDE})
-source_group("Include\\profiler" FILES ${Teapot_PROFILER_INCLUDE})
+source_group("Include\\vulkan" FILES ${Teapot_INCLUDE_VULKAN})
+source_group("Include\\gui" FILES ${Teapot_INCLUDE_GUI})
 source_group("Include\\generated" FILES ${Teapot_GENERATED_INCLUDE})
-source_group("Include\\imgui" FILES ${IMGUI_INCLUDE})
+
+source_group("lib\\imgui" FILES ${IMGUI_SRC})
+source_group("lib\\imgui" FILES ${IMGUI_INCLUDE})
 
 target_include_directories(Teapot
 							PUBLIC ${OPENGL_INCLUDE_DIR}
@@ -121,7 +136,9 @@ set_property(TARGET Teapot
 
 set(SHADER_DIR "${PROJECT_SOURCE_DIR}/Teapot/shader")
 set(SHADER_FILES ${SHADER_DIR}/rasterizer.vert
-					${SHADER_DIR}/rasterizer.frag)
+					${SHADER_DIR}/rasterizer.frag
+					${SHADER_DIR}/rasterizerPoint.frag
+					${SHADER_DIR}/rasterizerLine.frag)
 
 SET(SHADER_COMPILER "P:/VulkanSDK/1.1.108.0/Bin/glslc.exe")
 add_custom_target(Shader 
