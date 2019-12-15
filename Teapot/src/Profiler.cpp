@@ -1,4 +1,4 @@
-#include "profiler/Profiler.h"
+#include "Profiler.h"
 
 #ifdef PROFILING
 
