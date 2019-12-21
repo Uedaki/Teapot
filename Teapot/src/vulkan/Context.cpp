@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Application.h"
+#include "Log.h"
 #include "Profiler.h"
 
 namespace
@@ -135,10 +136,10 @@ void teapot::vk::Context::selectPhysicalDevice()
 	{
 		VkPhysicalDeviceProperties properties;
 		vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-		std::cout << properties.deviceName << std::endl;
 
 		if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 		{
+			LOG_MSG("Device selected: %s", properties.deviceName	);
 			this->physicalDevice = physicalDevice;
 			return;
 		}

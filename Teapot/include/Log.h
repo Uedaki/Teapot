@@ -23,7 +23,7 @@ inline void printMsg(const char *msg, const char *type, Args... args)
 	ctime_s(buffer, 365, &time);
 	buffer[std::strlen(buffer) - 1] = '\0';
 
-	std::printf("%s : %s : ", buffer, type);
+	std::printf("[%s][%s] ", buffer, type);
 	std::printf(msg, args...);
 	std::printf("\n");
 }

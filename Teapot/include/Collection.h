@@ -10,6 +10,8 @@ namespace teapot
 		void init();
 		void destroy();
 
+		void unselect(DisplayMode mode);
+
 		vk::Mesh mesh;
 
 	private:

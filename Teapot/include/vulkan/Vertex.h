@@ -28,5 +28,11 @@ namespace teapot
 			uint32_t b;
 			uint32_t c;
 		};
+
+		struct EdgeIndice
+		{
+			uint32_t a;
+			uint32_t b;
+		};
 	}
 }

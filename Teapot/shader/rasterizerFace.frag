@@ -8,12 +8,12 @@ layout(location = 0) out vec4 outColor;
 
 void main()
 {
-    if (selected.z == 1)
+    if (selected.x == 1)
     {
         outColor = vec4(1.0, 0.55, 0.0, 1.0);
     }
     else
     {
-        outColor = vec4(0.f, 0.f, 0.f, 1.0);
+        outColor = vec4(1, 1, 1, 1);
     }
 }

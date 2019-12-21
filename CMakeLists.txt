@@ -7,7 +7,7 @@ set(EXECUTABLE_OUTPUT_PATH "./${EXECUTABLE_FOLDER_NAME}")
 project(Teapot)
 set(Teapot_PROJECT_NAME "Teapot")
 set(Teapot_VERSION_MAJOR 0)
-set(Teapot_VERSION_MINOR 3)
+set(Teapot_VERSION_MINOR 4)
 set(Teapot_SOURCE_DIR "${PROJECT_SOURCE_DIR}/${Teapot_PROJECT_NAME}/src")
 set(Teapot_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/${Teapot_PROJECT_NAME}/include")
 set(Teapot_GEN_FILE_DIR "${PROJECT_BINARY_DIR}/generated")
@@ -19,6 +19,7 @@ include_directories("${Teapot_GEN_FILE_DIR}")
 set(Teapot_SRC ${Teapot_SOURCE_DIR}/main.cpp
 				${Teapot_SOURCE_DIR}/Application.cpp
 				${Teapot_SOURCE_DIR}/Collection.cpp
+				${Teapot_SOURCE_DIR}/ObjectPicker.cpp
 				${Teapot_SOURCE_DIR}/Profiler.cpp)
 set(Teapot_SRC_VULKAN ${Teapot_SOURCE_DIR}/vulkan/Context.cpp
 						${Teapot_SOURCE_DIR}/vulkan/Command.cpp
@@ -36,6 +37,8 @@ set(Teapot_SRC_GUI ${Teapot_SOURCE_DIR}/gui/Manager.cpp
 set(Teapot_INCLUDE ${Teapot_INCLUDE_DIR}/Application.h
 					${Teapot_INCLUDE_DIR}/Collection.h
 					${Teapot_INCLUDE_DIR}/Profiler.h
+					${Teapot_INCLUDE_DIR}/ObjectPicker.h
+					${Teapot_INCLUDE_DIR}/DisplayMode.h
 					${Teapot_INCLUDE_DIR}/Log.h
 					${Teapot_INCLUDE_DIR}/Exception.h)
 set(Teapot_INCLUDE_VULKAN ${Teapot_INCLUDE_DIR}/vulkan/Context.h
@@ -137,6 +140,7 @@ set_property(TARGET Teapot
 set(SHADER_DIR "${PROJECT_SOURCE_DIR}/Teapot/shader")
 set(SHADER_FILES ${SHADER_DIR}/rasterizer.vert
 					${SHADER_DIR}/rasterizer.frag
+					${SHADER_DIR}/rasterizerFace.frag
 					${SHADER_DIR}/rasterizerPoint.frag
 					${SHADER_DIR}/rasterizerLine.frag)
 

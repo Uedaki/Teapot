@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "DisplayMode.h"
 #include "vulkan/Vertex.h"
 
 namespace teapot
@@ -27,6 +28,16 @@ namespace teapot
 
 			void updateTransform(glm::vec3 &location, glm::vec3 &rotation, glm::vec3 &scale);
 
+			void select(DisplayMode mode, uint32_t v1, uint32_t v2, uint32_t v3);
+			void selectFace(uint32_t v1, uint32_t v2, uint32_t v3);
+			void selectEdge(uint32_t v1, uint32_t v2);
+			void selectVertex(uint32_t index);
+			void unselect(DisplayMode mode);
+
+			inline const std::vector<Vertex> &getVertices() const { return (vertices); };
+			inline const std::vector<Indice> &getIndices() const { return (indices); }
+			inline const glm::mat4 &getTransform() const { return (transform); }
+
 		private:
 			glm::vec3 location = { 0, 0, 0 };
 			glm::vec3 rotation = { 0, 0, 0 };
@@ -34,15 +45,15 @@ namespace teapot
 			glm::mat4 transform = glm::mat4(1);
 
 			std::vector<Vertex> vertices = {
-			{{1, 1, 1}, {1, 0, 0}},
-			{{-1, 1, 1}, {0, 1, 0}},
-			{{-1, -1, 1}, {1, 0, 0}},
-			{{1, -1, 1}, {0, 0, 1}},
+				{{1, 1, 1}, {0, 0, 1}, {0.80, 0.80, 0.80}, {1, 1}, {0, 0, 0}},
+				{{-1, 1, 1}, {0, 0, 1}, {0.80, 0.80, 0.80}, {-1, 1}, {0, 0, 0}},
+				{{-1, -1, 1}, {0, 0, 1}, {0.80, 0.80, 0.80}, {-1, -1}, {0, 0, 0}},
+				{{1, -1, 1}, {0, 0, 1}, {0.80, 0.80, 0.80}, {1, -1}, {0, 0, 0}},
 
-			{{1, 1, -1}, {1, 0, 0}},
-			{{1, -1, -1}, {0, 1, 0}},
-			{{-1, -1, -1}, {1, 0, 0}},
-			{{-1, 1, -1}, {0, 0, 1}}
+				{{1, 1, -1}, {1, 0, 0}, {0.80, 0.80, 0.80}, {1, 1}, {0, 0, 0}},
+				{{1, -1, -1}, {0, 1, 0}, {0.80, 0.80, 0.80}, {1, 1}, {0, 0, 0}},
+				{{-1, -1, -1}, {1, 0, 0}, {0.80, 0.80, 0.80}, {1, 1}, {0, 0, 0}},
+				{{-1, 1, -1}, {0, 0, 1}, {0.80, 0.80, 0.80}, {1, 1}, {0, 0, 0}}
 			};
 			std::vector<Indice> indices = {
 				{0, 1, 2},
@@ -58,12 +69,15 @@ namespace teapot
 				{5, 3, 2},
 				{2, 6, 5}
 			};
-			
-			std::vector<VkBuffer> vertexBuffers;
-			std::vector<VkDeviceMemory> vertexBufferMemories;
 
-			std::vector<VkBuffer> indiceBuffers;
-			std::vector<VkDeviceMemory> indiceBufferMemories;
+			VkBuffer vertexBuffer;
+			VkDeviceMemory vertexBufferMemory;
+
+			VkBuffer indiceBuffer;
+			VkDeviceMemory indiceBufferMemory;
+
+			VkBuffer edgeIndiceBuffer;
+			VkDeviceMemory edgeIndiceBufferMemory;
 
 			SceneViewDescriptors descriptors;
 		};
