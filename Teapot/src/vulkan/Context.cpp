@@ -10,7 +10,7 @@
 
 namespace
 {
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallback(VkDebugReportFlagsEXT,
 													   VkDebugReportObjectTypeEXT objectType,
 													   uint64_t, size_t, int32_t, const char *,
@@ -54,7 +54,7 @@ void teapot::vk::Context::destroy()
 	vkDestroyRenderPass(device, renderPass, allocator);
 	vkDestroySwapchainKHR(device, swapchainInfo.swapchain, allocator);
 	vkDestroyDevice(device, allocator);
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
 	vkDestroyDebugReportCallbackEXT(instance, debugReport, allocator);
 #endif
@@ -86,7 +86,7 @@ void teapot::vk::Context::recreateSwapchain(uint32_t width, uint32_t height)
 
 void teapot::vk::Context::createInstance()
 {
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	const char *layers[] = { "VK_LAYER_LUNARG_standard_validation" };
 #endif
 
@@ -95,7 +95,7 @@ void teapot::vk::Context::createInstance()
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 	std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
 
@@ -103,13 +103,13 @@ void teapot::vk::Context::createInstance()
 	create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	create_info.ppEnabledExtensionNames = extensions.data();
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	create_info.enabledLayerCount = 1;
 	create_info.ppEnabledLayerNames = layers;
 #endif
 	VK_CHECK_RESULT(vkCreateInstance(&create_info, allocator, &instance));
 
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
 
 	VkDebugReportCallbackCreateInfoEXT debugReportInfo = {};

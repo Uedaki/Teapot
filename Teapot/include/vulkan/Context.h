@@ -73,7 +73,7 @@ namespace teapot
 			VkRenderPass renderPass;
 
 			VkAllocationCallbacks *allocator = nullptr;
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 			VkDebugReportCallbackEXT debugReport = VK_NULL_HANDLE;
 #endif
 

@@ -9,7 +9,7 @@
 #define LOG_WARNING(a, ...) printMsg(a, "WARNING", __VA_ARGS__)
 #define LOG_CRITICAL(a, ...) printMsg(a, "ERROR", __VA_ARGS__)
 
-#ifdef DEBUG_LOG
+#ifdef LOG_DEBUG
 #define DEBUG_MSG(a, ...) printMsg(a, "DEBUG", __VA_ARGS__);
 #else
 #define DEBUG_MSG(a, ...)
