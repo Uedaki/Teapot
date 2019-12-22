@@ -3,9 +3,9 @@
 #include "imgui_impl_glfw.h"
 
 #include "Application.h"
+#include "log.h"
 #include "Profiler.h"
 #include "vulkan/Context.h"
-#include "vulkan/SingleTimeCommandPool.h"
 
 void teapot::gui::Manager::init()
 {
@@ -45,6 +45,7 @@ void teapot::gui::Manager::init()
 	ImGui::StyleColorsDark();
 
 	ImGui_ImplGlfw_InitForVulkan(app.getWindow(), true);
+
 	ImGui_ImplVulkan_InitInfo initInfo = {};
 	initInfo.Instance = vulkan.instance;
 	initInfo.PhysicalDevice = vulkan.physicalDevice;
@@ -59,6 +60,8 @@ void teapot::gui::Manager::init()
 	ImGui_ImplVulkan_Init(&initInfo, vulkan.renderPass);
 
 	uploadFont();
+
+	LOG_MSG("GUI manager loaded");
 }
 
 void teapot::gui::Manager::destroy()
@@ -119,16 +122,12 @@ void teapot::gui::Manager::render(VkCommandBuffer &commandBuffer)
 
 void teapot::gui::Manager::uploadFont()
 {
-	Application &app = Application::get();
-	vk::Context &vulkan = app.getVulkan();
+	vk::Context &vulkan = Application::get().getVulkan();
+	vk::Command& command = Application::get().getMainCommand();
 
-	vk::SingleTimeCommandPool stc;
-	stc.init(vulkan.queue.transfer, vulkan.queue.transferFamily);
-
-	VkCommandBuffer &commandBuffer = stc.startRecording();
+	VkCommandBuffer &commandBuffer = command.recordNextBuffer();
 	ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
-	stc.finishAndSubmit();
-
-	stc.destroy();
+	command.submit();
+	vkDeviceWaitIdle(vulkan.device);
 	ImGui_ImplVulkan_DestroyFontUploadObjects();
 }

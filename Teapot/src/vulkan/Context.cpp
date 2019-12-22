@@ -5,11 +5,12 @@
 #include <vector>
 
 #include "Application.h"
+#include "Log.h"
 #include "Profiler.h"
 
 namespace
 {
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallback(VkDebugReportFlagsEXT,
 													   VkDebugReportObjectTypeEXT objectType,
 													   uint64_t, size_t, int32_t, const char *,
@@ -36,8 +37,9 @@ void teapot::vk::Context::init()
 	createRenderPass();
 	createSwapchainImageViews();
 	createSwapchainFrames();
-
 	retreiveConfig();
+
+	LOG_MSG("Vulkan context loaded");
 }
 
 void teapot::vk::Context::destroy()
@@ -52,7 +54,7 @@ void teapot::vk::Context::destroy()
 	vkDestroyRenderPass(device, renderPass, allocator);
 	vkDestroySwapchainKHR(device, swapchainInfo.swapchain, allocator);
 	vkDestroyDevice(device, allocator);
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
 	vkDestroyDebugReportCallbackEXT(instance, debugReport, allocator);
 #endif
@@ -84,7 +86,7 @@ void teapot::vk::Context::recreateSwapchain(uint32_t width, uint32_t height)
 
 void teapot::vk::Context::createInstance()
 {
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	const char *layers[] = { "VK_LAYER_LUNARG_standard_validation" };
 #endif
 
@@ -93,7 +95,7 @@ void teapot::vk::Context::createInstance()
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 	std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 #endif
 
@@ -101,15 +103,13 @@ void teapot::vk::Context::createInstance()
 	create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	create_info.ppEnabledExtensionNames = extensions.data();
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	create_info.enabledLayerCount = 1;
 	create_info.ppEnabledLayerNames = layers;
-	VK_CHECK_RESULT(vkCreateInstance(&create_info, allocator, &instance));
-#else
-	VK_CHECK_RESULT(vkCreateInstance(&create_info, allocator, &instance));
 #endif
+	VK_CHECK_RESULT(vkCreateInstance(&create_info, allocator, &instance));
 
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 	auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
 
 	VkDebugReportCallbackCreateInfoEXT debugReportInfo = {};
@@ -135,10 +135,10 @@ void teapot::vk::Context::selectPhysicalDevice()
 	{
 		VkPhysicalDeviceProperties properties;
 		vkGetPhysicalDeviceProperties(physicalDevice, &properties);
-		std::cout << properties.deviceName << std::endl;
 
 		if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 		{
+			LOG_MSG("Device selected: %s", properties.deviceName	);
 			this->physicalDevice = physicalDevice;
 			return;
 		}
@@ -168,7 +168,6 @@ void teapot::vk::Context::selectQueues()
 		{
 			queue.presentFamily = i;
 			queue.graphicsFamily = i;
-			break;
 		}
 		if (isSupported)
 			queue.presentFamily = i;
@@ -213,17 +212,24 @@ void teapot::vk::Context::createLogicalDevice()
 
 void teapot::vk::Context::getQueues()
 {
-	if (queue.presentFamily != Queue::invalidFamily)
-		vkGetDeviceQueue(device, queue.presentFamily, 0, &queue.present);
 	if (queue.graphicsFamily != Queue::invalidFamily)
-		vkGetDeviceQueue(device, queue.graphicsFamily, 0, &queue.graphics);
-	if (queue.transferFamily != Queue::invalidFamily)
-		vkGetDeviceQueue(device, queue.transferFamily, 0, &queue.transfer);
-	else
 	{
+		vkGetDeviceQueue(device, queue.graphicsFamily, 0, &queue.graphics);
+
 		queue.transferFamily = queue.graphicsFamily;
+		queue.presentFamily = queue.graphicsFamily;
 		queue.transfer = queue.graphics;
+		queue.present = queue.graphics;
 	}
+	//if (queue.graphicsFamily != Queue::invalidFamily)
+	//	vkGetDeviceQueue(device, queue.graphicsFamily, 0, &queue.graphics);
+	//if (queue.transferFamily != Queue::invalidFamily)
+	//	vkGetDeviceQueue(device, queue.transferFamily, 0, &queue.transfer);
+	//else
+	//{
+	//	queue.transferFamily = queue.graphicsFamily;
+	//	queue.transfer = queue.graphics;
+	//}
 }
 
 void teapot::vk::Context::createSwapchain()

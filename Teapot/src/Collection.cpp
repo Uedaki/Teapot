@@ -9,3 +9,8 @@ void teapot::Collection::destroy()
 {
 	mesh.destroy();
 }
+
+void teapot::Collection::unselect(DisplayMode mode)
+{
+	mesh.unselect(mode);
+}

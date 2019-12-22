@@ -8,6 +8,7 @@ layout (location = 3) in vec3 itexCoord;
 layout (location = 4) in vec3 iselect;
 
 layout (location = 0) out vec3 fragColor;
+layout (location = 1) out vec3 selected;
 
 layout (binding = 0) uniform CameraBinding
 {
@@ -23,6 +24,7 @@ void main()
 {
     gl_Position = camera.proj * camera.view * object.model * vec4(ipos, 1.0);
     fragColor = icolor;
+	selected = iselect;
 
 	gl_PointSize = 10;
 }

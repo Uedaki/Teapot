@@ -28,22 +28,36 @@ void teapot::gui::AttributeEditorWidget::draw()
 		currentObject->updateTransform(location, rotation, scale);
 	}
 
-	ImGui::Text("Edition mode:");
-	if (ImGui::RadioButton("None", mode == 0)) // NONE
-	{
-		mode = 0;
-		Application::get().getSceneEditor().changeOverlay(mode);
-	}
-	if (ImGui::RadioButton("Edge", mode == 1)) // EDGE
-	{
-		mode = 1;
-		Application::get().getSceneEditor().changeOverlay(mode);
-	}
-	if (ImGui::RadioButton("Vertex", mode == 2)) // VERTEX
-	{
-		mode = 2;
-		Application::get().getSceneEditor().changeOverlay(mode);
-	}
 
+	if (ImGui::CollapsingHeader("Edition mode", nullptr, ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		if (ImGui::Checkbox("Enable edition mode", &editionEnable))
+		{
+			if (editionEnable)
+				Application::get().getSceneEditor().changeOverlay(mode);
+			else
+				Application::get().getSceneEditor().deleteOverlay();
+		}
+
+		if (editionEnable)
+		{
+			ImGui::Text("Mode:");
+			if (ImGui::RadioButton("Face", mode == DisplayMode::FACE)) // NONE
+			{
+				mode = DisplayMode::FACE;
+				Application::get().getSceneEditor().changeOverlay(mode);
+			}
+			if (ImGui::RadioButton("Edge", mode == DisplayMode::EDGE)) // EDGE
+			{
+				mode = DisplayMode::EDGE;
+				Application::get().getSceneEditor().changeOverlay(mode);
+			}
+			if (ImGui::RadioButton("Vertex", mode == DisplayMode::VERTEX)) // VERTEX
+			{
+				mode = DisplayMode::VERTEX;
+				Application::get().getSceneEditor().changeOverlay(mode);
+			}
+		}
+	}
 	ImGui::End();
 }

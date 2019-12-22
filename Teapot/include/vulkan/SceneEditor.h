@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "DisplayMode.h"
 #include "vulkan/Pipeline.h"
 
 namespace teapot
@@ -16,6 +17,9 @@ namespace teapot
 		{
 			struct SceneView
 			{
+				glm::mat4 view;
+				glm::mat4 proj;
+
 				VkBuffer cameraBuffer;
 				VkDeviceMemory cameraBufferMemory;
 
@@ -37,12 +41,16 @@ namespace teapot
 			void renderViews(VkCommandBuffer &commandBuffer);
 
 			void updateExtent(uint32_t width, uint32_t height);
-			void changeOverlay(uint32_t mode);
+			void changeOverlay(DisplayMode newMode);
+			void deleteOverlay();
 
 			VkDescriptorSet &getDescriptorSet();
 
+			inline DisplayMode getCurrentDisplayMode() const { return (mode); }
+
 		private:
 			VkExtent2D extent = {0, 0};
+			DisplayMode mode = DisplayMode::FACE;
 
 			VkRenderPass renderPass;
 			VkDescriptorSetLayout descriptorSetLayout;

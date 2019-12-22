@@ -37,9 +37,9 @@ namespace teapot
 
 			struct SwapChain
 			{
-				uint32_t currImg;
-				uint32_t imgCount;
-				VkSwapchainKHR swapchain;
+				uint32_t currImg = 0;
+				uint32_t imgCount = 0;
+				VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 				std::vector<VkImage> images;
 				std::vector<VkImageView> imageViews;
 				std::vector<VkFramebuffer> frames;
@@ -73,7 +73,7 @@ namespace teapot
 			VkRenderPass renderPass;
 
 			VkAllocationCallbacks *allocator = nullptr;
-#ifdef VULKAN_DEBUG_LOG
+#ifdef VULKAN_DEBUG
 			VkDebugReportCallbackEXT debugReport = VK_NULL_HANDLE;
 #endif
 

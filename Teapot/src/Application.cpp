@@ -14,7 +14,19 @@ namespace
 {
 	void glfwResizeCallback(GLFWwindow *win, int w, int h)
 	{
+#ifdef LOG_DEBUG
+		if (w == 0 && h == 0)
+			DEBUG_MSG("Window has been minimized");
+#endif
+		if (w == 0)
+		while (w == 0 || h == 0)
+		{
+			glfwWaitEvents();
+			glfwGetFramebufferSize(win, &w, &h);
+		}
+
 		teapot::Application *app = reinterpret_cast<teapot::Application *>(glfwGetWindowUserPointer(win));
+		DEBUG_MSG("Resize window %dx%d", w, h);
 		app->resize(w, h);
 	}
 }
@@ -39,15 +51,14 @@ void teapot::Application::init()
 	initGlfw();
 
 	vulkan.init();
-	
+	command.init();
+
 	gui.init();
 	gui.addWidget<gui::SceneEditorWidget>();
 	gui.addWidget<gui::AttributeEditorWidget>();
 
 	sceneEditor.init();
 	collection.init();
-
-	command.init();
 }
 
 void teapot::Application::destroy()
@@ -62,6 +73,8 @@ void teapot::Application::destroy()
 	vulkan.destroy();
 
 	destroyGlfw();
+
+	isInitialized = false;
 }
 
 

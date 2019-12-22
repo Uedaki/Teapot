@@ -1,8 +1,10 @@
 #include "vulkan/SceneEditor.h"
 
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "Application.h"
+#include "Log.h"
 #include "vulkan/Utils.h"
 
 void teapot::vk::SceneEditor::init()
@@ -12,6 +14,8 @@ void teapot::vk::SceneEditor::init()
 
 	createOutputImageSampler();
 	createOutputDescriptorSetLayout();
+
+	LOG_MSG("Scene editor loaded");
 }
 
 void teapot::vk::SceneEditor::destroy()
@@ -35,16 +39,12 @@ void teapot::vk::SceneEditor::destroy()
 
 void teapot::vk::SceneEditor::updateExtent(uint32_t width, uint32_t height)
 {
+	bool hasOverlay = false;
+
 	if (extent.width == width && extent.height == height)
 		return;
 	else if (extent.width != 0)
-	{
 		destroySceneView(sceneView);
-
-		mainPipeline.destroy();
-		if (overlayPipeline)
-			overlayPipeline.destroy();
-	}
 
 	extent.width = width;
 	extent.height = height;
@@ -52,31 +52,38 @@ void teapot::vk::SceneEditor::updateExtent(uint32_t width, uint32_t height)
 	mainPipeline.init(renderPass, descriptorSetLayout,
 					  VK_POLYGON_MODE_FILL, extent,
 					  "shader/rasterizer.vert.spv", "shader/rasterizer.frag.spv");
+	if (overlayPipeline)
+		changeOverlay(mode);
 	createSceneView(sceneView);
 }
 
-void teapot::vk::SceneEditor::changeOverlay(uint32_t mode)
+void teapot::vk::SceneEditor::changeOverlay(DisplayMode newMode)
 {
-	if (mode == 0)
+	mode = newMode;
+	if (mode == DisplayMode::FACE)
 	{
-		if (overlayPipeline)
-		{
-			overlayPipeline.destroy();
-		}
-		return;
+		overlayPipeline.init(renderPass, descriptorSetLayout,
+							 VK_POLYGON_MODE_FILL, extent,
+							 "shader/rasterizer.vert.spv", "shader/rasterizerFace.frag.spv");
 	}
-	else if (mode == 1)
+	else if (mode == DisplayMode::EDGE)
 	{
 		overlayPipeline.init(renderPass, descriptorSetLayout,
 							 VK_POLYGON_MODE_LINE, extent,
 							 "shader/rasterizer.vert.spv", "shader/rasterizerLine.frag.spv");
 	}
-	else if (mode == 2)
+	else if (mode == DisplayMode::VERTEX)
 	{
 		overlayPipeline.init(renderPass, descriptorSetLayout,
 							 VK_POLYGON_MODE_POINT, extent,
 							 "shader/rasterizer.vert.spv", "shader/rasterizerPoint.frag.spv");
 	}
+}
+
+void teapot::vk::SceneEditor::deleteOverlay()
+{
+	mode = DisplayMode::NONE;
+	overlayPipeline.destroy();
 }
 
 VkDescriptorSet &teapot::vk::SceneEditor::getDescriptorSet()
@@ -224,6 +231,10 @@ void teapot::vk::SceneEditor::createSceneView(teapot::vk::SceneEditor::SceneView
 {
 	vk::Context &vulkan = Application::get().getVulkan();
 
+	view.view = glm::lookAt(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	view.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(extent.width) / extent.height, 0.1f, 100.0f);
+	view.proj[1][1] *= -1;
+
 	createCameraBuffer(view);
 
 	view.images.resize(vulkan.swapchainInfo.imgCount);
@@ -244,14 +255,15 @@ void teapot::vk::SceneEditor::createSceneView(teapot::vk::SceneEditor::SceneView
 	createDescriptorSet(view);
 }
 
+#include <iostream>
+
 void teapot::vk::SceneEditor::createCameraBuffer(teapot::vk::SceneEditor::SceneView &view)
 {
 	vk::Context &vulkan = Application::get().getVulkan();
 
 	glm::mat4 mat[2];
-	mat[0] = glm::lookAt(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));;
-	mat[1] = glm::perspective(glm::radians(45.0f), static_cast<float>(extent.width) / extent.height, 0.1f, 100.0f);
-	mat[1][1][1] *= -1;
+	mat[0] = view.view;
+	mat[1] = view.proj;
 
 	void *data;
 	Utils::createBuffer(view.cameraBuffer, view.cameraBufferMemory, 2 * sizeof(glm::mat4), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
