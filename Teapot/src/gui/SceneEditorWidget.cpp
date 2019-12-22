@@ -33,12 +33,10 @@ void teapot::gui::SceneEditorWidget::handleSelection(ImVec2 size)
 		ImVec2 mousePos = ImGui::GetMousePos();
 		if (mousePos.x < size.x && mousePos.y < size.y)
 		{
-			glm::vec3 origin = glm::vec3(5, 5, 5);
-			glm::mat4 proj = glm::perspective(glm::radians(45.0f), static_cast<float>(size.x) / size.y, 0.1f, 100.0f);
-			proj[1][1] *= -1;
+			glm::mat4 proj = Application::get().getSceneEditor().getSceneView().proj;
 			glm::mat4 invProj = glm::inverse(proj);
 
-			glm::mat4 view = glm::lookAt(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+			glm::mat4 view = Application::get().getSceneEditor().getSceneView().view;
 			glm::mat4 invView = glm::inverse(view);
 
 			glm::vec2 uv(static_cast<float>(mousePos.x) / size.x, static_cast<float>(mousePos.y) / size.y);
@@ -49,7 +47,7 @@ void teapot::gui::SceneEditorWidget::handleSelection(ImVec2 size)
 			DisplayMode mode = Application::get().getSceneEditor().getCurrentDisplayMode();
 			if (mode == DisplayMode::NONE)
 			{
-				ObjectPicker::Result result = ObjectPicker::findVertex(origin, dir, 100);
+				ObjectPicker::Result result = ObjectPicker::findVertex(invView * glm::vec4(0, 0, 0, 1), dir, 100);
 				if (result.mesh)
 					; // collection selectMesh
 				else
@@ -57,7 +55,7 @@ void teapot::gui::SceneEditorWidget::handleSelection(ImVec2 size)
 			}
 			else
 			{
-				ObjectPicker::Result result = ObjectPicker::find(mode, origin, dir, 100);
+				ObjectPicker::Result result = ObjectPicker::find(mode, invView * glm::vec4(0, 0, 0, 1), dir, 100);
 				if (result.mesh)
 					result.mesh->select(mode, result.v1, result.v2, result.v3);
 				else
