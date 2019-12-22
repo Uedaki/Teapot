@@ -15,3 +15,6 @@ jobs:
     - run: |
         curl https://vulkan.lunarg.com/sdk/home#sdk/downloadConfirm/1.1.130.0/windows/VulkanSDK-1.1.130.0-Installer.exe -o vulkan-installer.exe
         vulkan-installer.exe
+    
+    - name: Run Cmake
+    - run: cmake ./
