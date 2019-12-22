@@ -39,16 +39,12 @@ void teapot::vk::SceneEditor::destroy()
 
 void teapot::vk::SceneEditor::updateExtent(uint32_t width, uint32_t height)
 {
+	bool hasOverlay = false;
+
 	if (extent.width == width && extent.height == height)
 		return;
 	else if (extent.width != 0)
-	{
 		destroySceneView(sceneView);
-
-		mainPipeline.destroy();
-		if (overlayPipeline)
-			overlayPipeline.destroy();
-	}
 
 	extent.width = width;
 	extent.height = height;
@@ -56,6 +52,8 @@ void teapot::vk::SceneEditor::updateExtent(uint32_t width, uint32_t height)
 	mainPipeline.init(renderPass, descriptorSetLayout,
 					  VK_POLYGON_MODE_FILL, extent,
 					  "shader/rasterizer.vert.spv", "shader/rasterizer.frag.spv");
+	if (overlayPipeline)
+		changeOverlay(mode);
 	createSceneView(sceneView);
 }
 

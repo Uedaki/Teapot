@@ -61,6 +61,8 @@ void teapot::Application::destroy()
 	vulkan.destroy();
 
 	destroyGlfw();
+
+	isInitialized = false;
 }
 
 
