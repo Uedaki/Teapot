@@ -5,7 +5,6 @@
 #include "Application.h"
 #include "DisplayMode.h"
 #include "vulkan/Utils.h"
-#include "vulkan/SingleTimeCommandPool.h"
 
 void teapot::vk::Mesh::init()
 {

@@ -37,8 +37,9 @@ void teapot::vk::Context::init()
 	createRenderPass();
 	createSwapchainImageViews();
 	createSwapchainFrames();
-
 	retreiveConfig();
+
+	LOG_MSG("Vulkan context loaded");
 }
 
 void teapot::vk::Context::destroy()
@@ -105,10 +106,8 @@ void teapot::vk::Context::createInstance()
 #ifdef VULKAN_DEBUG_LOG
 	create_info.enabledLayerCount = 1;
 	create_info.ppEnabledLayerNames = layers;
-	VK_CHECK_RESULT(vkCreateInstance(&create_info, allocator, &instance));
-#else
-	VK_CHECK_RESULT(vkCreateInstance(&create_info, allocator, &instance));
 #endif
+	VK_CHECK_RESULT(vkCreateInstance(&create_info, allocator, &instance));
 
 #ifdef VULKAN_DEBUG_LOG
 	auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
@@ -169,7 +168,6 @@ void teapot::vk::Context::selectQueues()
 		{
 			queue.presentFamily = i;
 			queue.graphicsFamily = i;
-			break;
 		}
 		if (isSupported)
 			queue.presentFamily = i;
@@ -214,17 +212,24 @@ void teapot::vk::Context::createLogicalDevice()
 
 void teapot::vk::Context::getQueues()
 {
-	if (queue.presentFamily != Queue::invalidFamily)
-		vkGetDeviceQueue(device, queue.presentFamily, 0, &queue.present);
 	if (queue.graphicsFamily != Queue::invalidFamily)
-		vkGetDeviceQueue(device, queue.graphicsFamily, 0, &queue.graphics);
-	if (queue.transferFamily != Queue::invalidFamily)
-		vkGetDeviceQueue(device, queue.transferFamily, 0, &queue.transfer);
-	else
 	{
+		vkGetDeviceQueue(device, queue.graphicsFamily, 0, &queue.graphics);
+
 		queue.transferFamily = queue.graphicsFamily;
+		queue.presentFamily = queue.graphicsFamily;
 		queue.transfer = queue.graphics;
+		queue.present = queue.graphics;
 	}
+	//if (queue.graphicsFamily != Queue::invalidFamily)
+	//	vkGetDeviceQueue(device, queue.graphicsFamily, 0, &queue.graphics);
+	//if (queue.transferFamily != Queue::invalidFamily)
+	//	vkGetDeviceQueue(device, queue.transferFamily, 0, &queue.transfer);
+	//else
+	//{
+	//	queue.transferFamily = queue.graphicsFamily;
+	//	queue.transfer = queue.graphics;
+	//}
 }
 
 void teapot::vk::Context::createSwapchain()

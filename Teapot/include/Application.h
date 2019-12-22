@@ -21,6 +21,7 @@ namespace teapot
 		inline static Application &get() { return (*app); }
 		inline GLFWwindow *getWindow() { return (win); }
 		inline vk::Context &getVulkan() { return (vulkan); }
+		inline vk::Command& getMainCommand() { return (command); }
 		inline gui::Manager &getGui() { return (gui); }
 		inline vk::SceneEditor &getSceneEditor() { return (sceneEditor); }
 		inline Collection &getCollection() { return (collection); }
@@ -39,11 +40,10 @@ namespace teapot
 		GLFWwindow *win = nullptr;
 
 		vk::Context vulkan;
+		vk::Command command;
 		gui::Manager gui;
 		vk::SceneEditor sceneEditor;
 		Collection collection;
-
-		vk::Command command;
 
 		void initGlfw();
 		void destroyGlfw();

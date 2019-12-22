@@ -39,15 +39,14 @@ void teapot::Application::init()
 	initGlfw();
 
 	vulkan.init();
-	
+	command.init();
+
 	gui.init();
 	gui.addWidget<gui::SceneEditorWidget>();
 	gui.addWidget<gui::AttributeEditorWidget>();
 
 	sceneEditor.init();
 	collection.init();
-
-	command.init();
 }
 
 void teapot::Application::destroy()

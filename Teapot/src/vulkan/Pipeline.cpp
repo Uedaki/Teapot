@@ -31,11 +31,12 @@ void teapot::vk::Pipeline::init(VkRenderPass renderPass, VkDescriptorSetLayout d
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
+	auto bindingDesc = Vertex::getBindingDescription();
 	auto attrDesc = Vertex::getAttributeDescriptions();
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertexInputInfo.vertexBindingDescriptionCount = 1;
-	vertexInputInfo.pVertexBindingDescriptions = &Vertex::getBindingDescription();
+	vertexInputInfo.pVertexBindingDescriptions = &bindingDesc;
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attrDesc.size());
 	vertexInputInfo.pVertexAttributeDescriptions = attrDesc.data();
 

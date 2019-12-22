@@ -4,6 +4,7 @@
 #include <glm/gtx/string_cast.hpp>
 
 #include "Application.h"
+#include "Log.h"
 #include "vulkan/Utils.h"
 
 void teapot::vk::SceneEditor::init()
@@ -13,6 +14,8 @@ void teapot::vk::SceneEditor::init()
 
 	createOutputImageSampler();
 	createOutputDescriptorSetLayout();
+
+	LOG_MSG("Scene editor loaded");
 }
 
 void teapot::vk::SceneEditor::destroy()

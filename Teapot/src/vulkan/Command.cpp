@@ -70,7 +70,6 @@ VkCommandBuffer &teapot::vk::Command::recordNextBuffer()
 	vkWaitForFences(vulkan.device, 1, &fences[currImage], true, UINT64_MAX);
 	vkResetFences(vulkan.device, 1, &fences[currImage]);
 
-	//	vkResetCommandPool(vulkan.device, commandPool, 0);
 	vkResetCommandBuffer(cmd, 0);
 
 	VkCommandBufferBeginInfo info = {};
@@ -78,6 +77,23 @@ VkCommandBuffer &teapot::vk::Command::recordNextBuffer()
 	info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 	vkBeginCommandBuffer(cmd, &info);
 	return (cmd);
+}
+
+void teapot::vk::Command::submit()
+{
+	PROFILE_FUNCTION("Vulkan");
+
+	Application& app = Application::get();
+	vk::Context& vulkan = app.getVulkan();
+	VkCommandBuffer& cmd = commandBuffers[currImage];
+
+	vkEndCommandBuffer(cmd);
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffers[currImage];
+	vkQueueSubmit(vulkan.queue.graphics, 1, &submitInfo, fences[currImage]);
 }
 
 void teapot::vk::Command::submitAndPresent()

@@ -16,6 +16,7 @@ namespace teapot
 
 			void requestNextImage();
 			VkCommandBuffer &recordNextBuffer();
+			void submit();
 			void submitAndPresent();
 		private:
 			uint32_t currImage = 0;
