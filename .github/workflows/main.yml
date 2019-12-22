@@ -12,4 +12,7 @@ jobs:
 
     steps:
     - name: Run cmake
-      run: mkdir build && cd build && cmake ../
+      run: |
+        mkdir build
+        cd build
+        cmake ../
