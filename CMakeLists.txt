@@ -58,6 +58,10 @@ set(PROJECT_GENERATED_INCLUDE ${Teapot_GEN_FILE_DIR}/Teapot.h)
 find_package(OpenGL REQUIRED)
 find_package(Vulkan REQUIRED)
 
+set(Glfw_INCLUDE_DIRS "" CACHE PATH "Define path to glfw include")
+set(Glfw_LIBRARIES_DIRS "" CACHE PATH "Define path to glfw libraries")
+set(Glfw_LIBRARIES ${Vulkan_LIBRARIES_DIRS}/glfw3dll.lib)
+
 set(PROFILING "" CACHE BOOL "Define if profiling is activated or not")
 if (PROFILING)
 	add_definitions(-DPROFILING)
@@ -124,11 +128,13 @@ source_group("lib\\imgui" FILES ${IMGUI_INCLUDE})
 
 target_include_directories(Teapot
 							PUBLIC ${OPENGL_INCLUDE_DIR}
-							PUBLIC ${Vulkan_INCLUDE_DIRS})
+							PUBLIC ${Vulkan_INCLUDE_DIRS}
+							PUBLIC ${Glfw_INCLUDE_DIRS})
 
 target_link_libraries(Teapot
 						${OPENGL_gl_LIBRARY}
-						${Vulkan_LIBRARIES})
+						${Vulkan_LIBRARIES}
+						${Glfw_LIBRARIES})
 						
 add_dependencies(Teapot Shader)
 
