@@ -15,6 +15,7 @@ namespace teapot
 	{
 		class SceneEditor
 		{
+		public:
 			struct SceneView
 			{
 				glm::mat4 view;
@@ -34,7 +35,6 @@ namespace teapot
 				std::vector<VkDescriptorSet> descriptorSet;
 			};
 
-		public:
 			void init();
 			void destroy();
 
