@@ -27,7 +27,6 @@ set(Teapot_SRC_VULKAN ${Teapot_SOURCE_DIR}/vulkan/Context.cpp
 						${Teapot_SOURCE_DIR}/vulkan/Mesh.cpp
 						${Teapot_SOURCE_DIR}/vulkan/Utils.cpp
 						${Teapot_SOURCE_DIR}/vulkan/Vertex.cpp
-						${Teapot_SOURCE_DIR}/vulkan/SingleTimeCommandPool.cpp
 						${Teapot_SOURCE_DIR}/vulkan/SceneEditor.cpp)
 set(Teapot_SRC_GUI ${Teapot_SOURCE_DIR}/gui/Manager.cpp
 					${Teapot_SOURCE_DIR}/gui/SceneEditorWidget.cpp
@@ -47,7 +46,6 @@ set(Teapot_INCLUDE_VULKAN ${Teapot_INCLUDE_DIR}/vulkan/Context.h
 						${Teapot_INCLUDE_DIR}/vulkan/Mesh.h
 						${Teapot_INCLUDE_DIR}/vulkan/Utils.h
 						${Teapot_INCLUDE_DIR}/vulkan/Vertex.h
-						${Teapot_INCLUDE_DIR}/vulkan/SingleTimeCommandPool.h
 						${Teapot_INCLUDE_DIR}/vulkan/SceneEditor.h)
 set(Teapot_INCLUDE_GUI ${Teapot_INCLUDE_DIR}/gui/Manager.h
 						${Teapot_INCLUDE_DIR}/gui/Widget.h
@@ -72,15 +70,15 @@ if (LOG_INFO)
 	add_definitions(-DLOG_INFO)
 endif (LOG_INFO)
 
-set(DEBUG_LOG "" CACHE BOOL "Define if the application will output debug info")
-if (DEBUG_LOG)
-	add_definitions(-DDEBUG_LOG)
-endif (DEBUG_LOG)
+set(LOG_DEBUG "" CACHE BOOL "Define if the application will output debug info")
+if (LOG_DEBUG)
+	add_definitions(-DLOG_DEBUG)
+endif (LOG_DEBUG)
 
-set(VULKAN_DEBUG_LOG "" CACHE BOOL "Define if vulkan debug layer are used or not")
-if (VULKAN_DEBUG_LOG)
-	add_definitions(-DVULKAN_DEBUG_LOG)
-endif (VULKAN_DEBUG_LOG)
+set(VULKAN_DEBUG "" CACHE BOOL "Define if vulkan debug layer are used or not")
+if (VULKAN_DEBUG)
+	add_definitions(-DVULKAN_DEBUG)
+endif (VULKAN_DEBUG)
 
 set(GLM_INCLUDE_DIR "" CACHE PATH "Path to the glm include files")
 include_directories(${GLM_INCLUDE_DIR})
