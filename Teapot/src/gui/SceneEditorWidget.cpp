@@ -5,6 +5,7 @@
 #include "Imgui.h"
 
 #include "Application.h"
+#include "Log.h"
 #include "ObjectPicker.h"
 #include "Vulkan/Mesh.h"
 
@@ -17,6 +18,7 @@ void teapot::gui::SceneEditorWidget::draw()
 	Application::get().getSceneEditor().updateExtent(size.x, size.y);
 
 	handleSelection(size);
+	handleCameraMovement(size);
 
 	void *data = &Application::get().getSceneEditor().getDescriptorSet();
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -24,6 +26,65 @@ void teapot::gui::SceneEditorWidget::draw()
 	ImGui::Begin("SceneView", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 	ImGui::Image(data, ImGui::GetContentRegionAvail());
 	ImGui::End();
+}
+
+void teapot::gui::SceneEditorWidget::handleCameraMovement(ImVec2 size)
+{
+	ImVec2 mousePos = ImGui::GetMousePos();
+
+	if (mouseButtonIndex != -1)
+	{
+		const float factorX = 0.10;
+		const float factorY = 0.10;
+
+		float movX = mousePos.x - mouseLastPosition.x;
+		float movY = mousePos.y - mouseLastPosition.y;
+
+		glm::mat4 &view = Application::get().getSceneEditor().getSceneView().view;
+		glm::mat4 invView = glm::inverse(view);
+		glm::vec4 pos = invView * glm::vec4(0, 0, 0, 1);
+		glm::vec4 front = invView * glm::vec4(0, 0, 1, 0);
+		glm::vec4 right = invView * glm::vec4(1, 0, 0, 0);
+		glm::vec4 up = invView* glm::vec4(0, 1, 0, 0);
+
+		if (mouseButtonIndex == 0)
+		{
+			float len = glm::length(pos);
+			
+		}
+		else if (mouseButtonIndex == 1)
+		{
+			view = glm::translate(view, -glm::normalize(glm::vec3(front)) * movX * factorY * factorX);
+			view = glm::translate(view, -glm::normalize(glm::vec3(front)) * movY * factorY);
+		}
+		else if (mouseButtonIndex == 2)
+		{
+			view = glm::translate(view, glm::normalize(glm::vec3(right)) * movX * factorX);
+			view = glm::translate(view, -glm::normalize(glm::vec3(up)) * movY * factorY);
+		}
+
+		Application::get().getSceneEditor().pushTransform();
+
+		mouseLastPosition = mousePos;
+
+		if (ImGui::IsMouseReleased(mouseButtonIndex) || mousePos.x >= size.x || mousePos.y >= size.y)
+			mouseButtonIndex = -1;
+	}
+	else if (ImGui::IsKeyDown(GLFW_KEY_LEFT_ALT))
+	{
+		if (mousePos.x < size.x && mousePos.y < size.y)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				if (ImGui::IsMouseDown(i))
+				{
+					mouseButtonIndex = i;
+					mouseLastPosition = mousePos;
+					break;
+				}
+			}
+		}
+	}
 }
 
 void teapot::gui::SceneEditorWidget::handleSelection(ImVec2 size)

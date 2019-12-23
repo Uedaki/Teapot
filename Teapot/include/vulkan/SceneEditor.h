@@ -39,6 +39,7 @@ namespace teapot
 			void destroy();
 
 			void renderViews(VkCommandBuffer &commandBuffer);
+			void pushTransform();
 
 			void updateExtent(uint32_t width, uint32_t height);
 			void changeOverlay(DisplayMode newMode);
@@ -47,7 +48,7 @@ namespace teapot
 			VkDescriptorSet &getDescriptorSet();
 
 			inline DisplayMode getCurrentDisplayMode() const { return (mode); }
-			inline SceneView getSceneView() const { return (sceneView); }
+			inline SceneView &getSceneView() { return (sceneView); }
 
 		private:
 			VkExtent2D extent = {0, 0};

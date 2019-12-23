@@ -139,6 +139,22 @@ void teapot::vk::SceneEditor::renderViews(VkCommandBuffer &commandBuffer)
 						 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
+void teapot::vk::SceneEditor::pushTransform()
+{
+	vk::Context& vulkan = Application::get().getVulkan();
+
+	vkDeviceWaitIdle(vulkan.device);
+
+	glm::mat4 mat[2];
+	mat[0] = sceneView.view;
+	mat[1] = sceneView.proj;
+
+	void* data;
+	vkMapMemory(vulkan.device, sceneView.cameraBufferMemory, 0, static_cast<uint32_t>(2 * sizeof(glm::mat4)), 0, &data);
+	memcpy(data, mat, static_cast<uint32_t>(2 * sizeof(glm::mat4)));
+	vkUnmapMemory(vulkan.device, sceneView.cameraBufferMemory);
+}
+
 void teapot::vk::SceneEditor::createRenderPass()
 {
 	vk::Context &vulkan = Application::get().getVulkan();
