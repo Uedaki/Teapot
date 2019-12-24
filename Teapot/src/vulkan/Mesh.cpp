@@ -55,9 +55,9 @@ void teapot::vk::Mesh::updateTransform(glm::vec3 &nLocation, glm::vec3 &nRotatio
 	glm::mat4 mat(1);
 	mat = glm::translate(mat, nLocation);
 
-	mat = glm::rotate(mat, nRotation.x, glm::vec3(1, 0, 0));
-	mat = glm::rotate(mat, nRotation.y, glm::vec3(0, 1, 0));
-	mat = glm::rotate(mat, nRotation.z, glm::vec3(0, 0, 1));
+	mat = glm::rotate(mat, glm::radians(nRotation.x), glm::vec3(1, 0, 0));
+	mat = glm::rotate(mat, glm::radians(nRotation.y), glm::vec3(0, 1, 0));
+	mat = glm::rotate(mat, glm::radians(nRotation.z), glm::vec3(0, 0, 1));
 
 	mat = glm::scale(mat, nScale);
 

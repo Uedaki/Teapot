@@ -1,7 +1,6 @@
 #include "vulkan/SceneEditor.h"
 
 #include <glm/gtx/transform.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 #include "Application.h"
 #include "Log.h"
@@ -139,6 +138,26 @@ void teapot::vk::SceneEditor::renderViews(VkCommandBuffer &commandBuffer)
 						 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
+void teapot::vk::SceneEditor::pushTransform(SceneView &view)
+{
+	vk::Context& vulkan = Application::get().getVulkan();
+
+	vkDeviceWaitIdle(vulkan.device);
+
+	glm::mat4 mat[2];
+	mat[0] = glm::lookAt(view.pos, view.pos + view.dir, view.up);
+	mat[1] = glm::perspective(glm::radians(45.0f), static_cast<float>(extent.width) / extent.height, 0.1f, 100.0f);;
+	mat[1][1][1] *= -1;
+
+	view.view = mat[0];
+	view.proj = mat[1];
+	
+	void* data;
+	vkMapMemory(vulkan.device, sceneView.cameraBufferMemory, 0, static_cast<uint32_t>(2 * sizeof(glm::mat4)), 0, &data);
+	memcpy(data, mat, static_cast<uint32_t>(2 * sizeof(glm::mat4)));
+	vkUnmapMemory(vulkan.device, sceneView.cameraBufferMemory);
+}
+
 void teapot::vk::SceneEditor::createRenderPass()
 {
 	vk::Context &vulkan = Application::get().getVulkan();
@@ -231,9 +250,12 @@ void teapot::vk::SceneEditor::createSceneView(teapot::vk::SceneEditor::SceneView
 {
 	vk::Context &vulkan = Application::get().getVulkan();
 
-	view.view = glm::lookAt(glm::vec3(5, 5, 5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-	view.proj = glm::perspective(glm::radians(45.0f), static_cast<float>(extent.width) / extent.height, 0.1f, 100.0f);
-	view.proj[1][1] *= -1;
+	if (view.pos == glm::vec3(glm::pi<float>()))
+	{
+		view.pos = glm::vec3(5, 5, 5);
+		view.dir = glm::vec3(-1, -1, -1);
+		view.up = glm::vec3(0, 1, 0);
+	}
 
 	createCameraBuffer(view);
 
@@ -255,22 +277,11 @@ void teapot::vk::SceneEditor::createSceneView(teapot::vk::SceneEditor::SceneView
 	createDescriptorSet(view);
 }
 
-#include <iostream>
-
 void teapot::vk::SceneEditor::createCameraBuffer(teapot::vk::SceneEditor::SceneView &view)
 {
-	vk::Context &vulkan = Application::get().getVulkan();
-
-	glm::mat4 mat[2];
-	mat[0] = view.view;
-	mat[1] = view.proj;
-
-	void *data;
 	Utils::createBuffer(view.cameraBuffer, view.cameraBufferMemory, 2 * sizeof(glm::mat4), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 						VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	vkMapMemory(vulkan.device, view.cameraBufferMemory, 0, static_cast<uint32_t>(2 * sizeof(glm::mat4)), 0, &data);
-	memcpy(data, mat, static_cast<uint32_t>(2 * sizeof(glm::mat4)));
-	vkUnmapMemory(vulkan.device, view.cameraBufferMemory);
+	pushTransform(view);
 }
 
 void teapot::vk::SceneEditor::createDescriptorPool(teapot::vk::SceneEditor::SceneView &view)
@@ -288,8 +299,7 @@ void teapot::vk::SceneEditor::createDescriptorPool(teapot::vk::SceneEditor::Scen
 	poolInfo.poolSizeCount = vulkan.swapchainInfo.imgCount;
 	poolInfo.pPoolSizes = poolSizes.data();
 	poolInfo.maxSets = vulkan.swapchainInfo.imgCount;
-	if (vkCreateDescriptorPool(vulkan.device, &poolInfo, vulkan.allocator, &view.descriptorPool) != VK_SUCCESS)
-		throw std::runtime_error("Failed to create VkDescriptorPool");
+	VK_CHECK_RESULT(vkCreateDescriptorPool(vulkan.device, &poolInfo, vulkan.allocator, &view.descriptorPool));
 }
 
 void teapot::vk::SceneEditor::createImage(VkImage &image)
@@ -381,8 +391,7 @@ void teapot::vk::SceneEditor::createDescriptorSet(teapot::vk::SceneEditor::Scene
 	alloc_info.pSetLayouts = layouts.data();
 
 	view.descriptorSet.resize(vulkan.swapchainInfo.imgCount);
-	if (vkAllocateDescriptorSets(vulkan.device, &alloc_info, view.descriptorSet.data()) != VK_SUCCESS)
-		throw std::runtime_error("Failed to create VkDescriptorSet");
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(vulkan.device, &alloc_info, view.descriptorSet.data()));
 
 	VkWriteDescriptorSet descriptorWriteTemplate = {};
 	descriptorWriteTemplate.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -417,8 +426,7 @@ void teapot::vk::SceneEditor::createOutputDescriptorSet(VkDescriptorSet &outDesc
 	alloc_info.descriptorPool = Application::get().getGui().getDescriptorPool();
 	alloc_info.descriptorSetCount = 1;
 	alloc_info.pSetLayouts = &outDescriptorSetLayout;
-	if (vkAllocateDescriptorSets(vulkan.device, &alloc_info, &outDescriptorSet) != VK_SUCCESS)
-		throw std::runtime_error("Failed to create VkDescriptorSet");
+	VK_CHECK_RESULT(vkAllocateDescriptorSets(vulkan.device, &alloc_info, &outDescriptorSet));
 
 	VkDescriptorImageInfo descImage = {};
 	descImage.sampler = outImageSampler;
