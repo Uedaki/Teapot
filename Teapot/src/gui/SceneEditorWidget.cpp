@@ -1,6 +1,7 @@
 #include "gui/SceneEditorWidget.h"
 
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "Imgui.h"
 
@@ -40,30 +41,27 @@ void teapot::gui::SceneEditorWidget::handleCameraMovement(ImVec2 size)
 		float movX = mousePos.x - mouseLastPosition.x;
 		float movY = mousePos.y - mouseLastPosition.y;
 
-		glm::mat4 &view = Application::get().getSceneEditor().getSceneView().view;
-		glm::mat4 invView = glm::inverse(view);
-		glm::vec4 pos = invView * glm::vec4(0, 0, 0, 1);
-		glm::vec4 front = invView * glm::vec4(0, 0, 1, 0);
-		glm::vec4 right = invView * glm::vec4(1, 0, 0, 0);
-		glm::vec4 up = invView* glm::vec4(0, 1, 0, 0);
+		vk::SceneEditor::SceneView &view = Application::get().getSceneEditor().getSceneView();
+		glm::vec3 &pos = view.pos;
+		glm::vec3 &front = view.front;
+		glm::vec3 &up = view.up;
+		glm::vec3 &right = glm::cross(front, up);
 
 		if (mouseButtonIndex == 0)
 		{
-			float len = glm::length(pos);
-			
+			front += movX * glm::normalize(right) * (factorX / 4)
+				+ movY * glm::normalize(up) * (factorY / 4);			
 		}
 		else if (mouseButtonIndex == 1)
 		{
-			view = glm::translate(view, -glm::normalize(glm::vec3(front)) * movX * factorY * factorX);
-			view = glm::translate(view, -glm::normalize(glm::vec3(front)) * movY * factorY);
+			pos += -glm::normalize(front - pos) * movY * factorY + glm::normalize(front - pos) * movX * factorY * factorX;
 		}
 		else if (mouseButtonIndex == 2)
 		{
-			view = glm::translate(view, glm::normalize(glm::vec3(right)) * movX * factorX);
-			view = glm::translate(view, -glm::normalize(glm::vec3(up)) * movY * factorY);
+			pos += glm::normalize(right) * movX * factorX - glm::normalize(up) * movY * factorY;
 		}
 
-		Application::get().getSceneEditor().pushTransform();
+		Application::get().getSceneEditor().pushTransform(view);
 
 		mouseLastPosition = mousePos;
 

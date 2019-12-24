@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.h>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 #include <vector>
 
@@ -18,11 +19,14 @@ namespace teapot
 		public:
 			struct SceneView
 			{
+				glm::vec3 pos = glm::vec3(glm::pi<float>());
+				glm::vec3 front = glm::vec3(glm::pi<float>());
+				glm::vec3 up = glm::vec3(glm::pi<float>());
 				glm::mat4 view;
 				glm::mat4 proj;
 
-				VkBuffer cameraBuffer;
-				VkDeviceMemory cameraBufferMemory;
+				VkBuffer cameraBuffer = VK_NULL_HANDLE;
+				VkDeviceMemory cameraBufferMemory = VK_NULL_HANDLE;
 
 				std::vector<VkImage> images;
 				std::vector<VkDeviceMemory> imageMemories;
@@ -31,7 +35,7 @@ namespace teapot
 				
 				std::vector<VkDescriptorSet> outDescriptorSet;
 
-				VkDescriptorPool descriptorPool;
+				VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
 				std::vector<VkDescriptorSet> descriptorSet;
 			};
 
@@ -39,7 +43,7 @@ namespace teapot
 			void destroy();
 
 			void renderViews(VkCommandBuffer &commandBuffer);
-			void pushTransform();
+			void pushTransform(SceneView &view);
 
 			void updateExtent(uint32_t width, uint32_t height);
 			void changeOverlay(DisplayMode newMode);
