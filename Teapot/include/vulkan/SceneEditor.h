@@ -20,7 +20,7 @@ namespace teapot
 			struct SceneView
 			{
 				glm::vec3 pos = glm::vec3(glm::pi<float>());
-				glm::vec3 front = glm::vec3(glm::pi<float>());
+				glm::vec3 dir = glm::vec3(glm::pi<float>());
 				glm::vec3 up = glm::vec3(glm::pi<float>());
 				glm::mat4 view;
 				glm::mat4 proj;

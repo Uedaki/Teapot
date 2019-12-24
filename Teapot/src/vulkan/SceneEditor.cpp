@@ -145,7 +145,7 @@ void teapot::vk::SceneEditor::pushTransform(SceneView &view)
 	vkDeviceWaitIdle(vulkan.device);
 
 	glm::mat4 mat[2];
-	mat[0] = glm::lookAt(view.pos, view.front, view.up);
+	mat[0] = glm::lookAt(view.pos, view.pos + view.dir, view.up);
 	mat[1] = glm::perspective(glm::radians(45.0f), static_cast<float>(extent.width) / extent.height, 0.1f, 100.0f);;
 	mat[1][1][1] *= -1;
 
@@ -253,7 +253,7 @@ void teapot::vk::SceneEditor::createSceneView(teapot::vk::SceneEditor::SceneView
 	if (view.pos == glm::vec3(glm::pi<float>()))
 	{
 		view.pos = glm::vec3(5, 5, 5);
-		view.front = glm::vec3(0.25, 0.25, 0.25);
+		view.dir = glm::vec3(-1, -1, -1);
 		view.up = glm::vec3(0, 1, 0);
 	}
 

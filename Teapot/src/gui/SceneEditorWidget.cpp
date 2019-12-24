@@ -43,18 +43,18 @@ void teapot::gui::SceneEditorWidget::handleCameraMovement(ImVec2 size)
 
 		vk::SceneEditor::SceneView &view = Application::get().getSceneEditor().getSceneView();
 		glm::vec3 &pos = view.pos;
-		glm::vec3 &front = view.front;
+		glm::vec3 &dir = view.dir;
 		glm::vec3 &up = view.up;
-		glm::vec3 &right = glm::cross(front, up);
+		glm::vec3 &right = glm::cross(dir, up);
 
 		if (mouseButtonIndex == 0)
 		{
-			front += movX * glm::normalize(right) * (factorX / 4)
-				+ movY * glm::normalize(up) * (factorY / 4);			
+			dir	+= -movX * glm::normalize(right) * (factorX * factorX / 4)
+				+ movY * glm::normalize(up) * (factorY * factorY / 4);
 		}
 		else if (mouseButtonIndex == 1)
 		{
-			pos += -glm::normalize(front - pos) * movY * factorY + glm::normalize(front - pos) * movX * factorY * factorX;
+			pos += -glm::normalize(dir) * movY * factorY + glm::normalize(dir) * movX * factorY * factorX;
 		}
 		else if (mouseButtonIndex == 2)
 		{
